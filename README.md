@@ -21,6 +21,9 @@ Lightweight application foundation for WordPress: service container, attribute-b
 - ✅ Cache ([Symfony Cache](https://symfony.com/doc/current/components/cache.html)) disabled outside production, cleared with `wp app:cache:clear`
 - ✅ Security hardening (HTTP headers, XML-RPC, REST API, user enumeration, ...)
 
+> [!WARNING]
+> Most of the [security protections](docs/security.md) are enabled by default: installing the package disables XML-RPC, oEmbed, the author pages and the `/admin` redirection. Review them before installing the package on an existing site.
+
 ## Installation
 
 Requires PHP 8.3+.
@@ -89,6 +92,7 @@ See [Getting started](docs/getting-started.md) for the details.
 - [Views](docs/views.md)
 - [Validation](docs/validation.md)
 - [Console](docs/console.md)
+- [Security](docs/security.md)
 
 ## Contributing
 

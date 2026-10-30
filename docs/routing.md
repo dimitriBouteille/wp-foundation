@@ -24,6 +24,11 @@ final class Register
 ```
 
 ```php
+namespace App\Controller;
+
+use Dbout\WpFoundation\Http\Response\ResponseInterface;
+use Dbout\WpFoundation\Routing\Attribute\Route;
+
 final class Training
 {
     #[Route(path: '/training/{sku}/quote', name: 'training_quote', methods: ['GET'], requirements: ['sku' => '[a-z0-9-]+'])]
@@ -79,6 +84,7 @@ The controller is built by the container, so the dependencies of its constructor
 - the other classes, resolved by the container.
 
 ```php
+use Dbout\WpFoundation\Http\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Request;
 
 #[Route(path: '/orders/{id}', name: 'order', methods: ['GET'])]

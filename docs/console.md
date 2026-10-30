@@ -88,6 +88,8 @@ A cache clearer implements `CacheClearerInterface` and is tagged in the containe
 ```php
 use Dbout\WpFoundation\Cache\Clearer\CacheClearerInterface;
 use Dbout\WpFoundation\Cache\Clearer\DirectoryCacheClearer;
+use Dbout\WpFoundation\Facades\Dir;
+use Dbout\WpFoundation\Filesystem\Directory;
 
 // In the register() method of a service provider
 $this->app->bind('app.pdf_cache_clearer', fn () => new DirectoryCacheClearer(

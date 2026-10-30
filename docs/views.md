@@ -85,14 +85,14 @@ The `site` global contains the information of the site:
 <a href="{{ site.url }}">{{ site.name }}</a> - {{ site.description }}
 ```
 
-### Assets
+### Asset functions
 
 | Function | Description |
 |---|---|
 | `asset_url('area::file')` | URL of an asset |
 | `asset_content('area::file')` | Content of an asset, i.e. to inline an SVG |
 
-See [Assets](#assets-1).
+See [Assets](#assets).
 
 ### Images
 

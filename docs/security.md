@@ -1,0 +1,92 @@
+# Security
+
+The package hardens WordPress with the options of `config/security.php`.
+
+> [!WARNING]
+> Most of the protections are **enabled by default**: installing the package changes the behavior of the site (no XML-RPC, no oEmbed, no author pages, no `/admin` redirection, ...). Review the options below and disable the ones you need in `config/security.php`.
+
+## Default configuration
+
+```php
+// config/security.php of the package
+return [
+    'headers' => [
+        'X-Frame-Options' => 'SAMEORIGIN',
+        'X-Content-Type-Options' => 'nosniff',
+        'Referrer-Policy' => 'strict-origin-when-cross-origin',
+    ],
+    'disableXmlRpc' => true,
+    'hideVersion' => true,
+    'preventUserEnumeration' => true,
+    'disableOEmbed' => true,
+    'hideRestApiDiscovery' => true,
+    'disableAdminRedirects' => true,
+    'restApi' => [
+        'restricted' => false,
+        'publicNamespaces' => [],
+        'capability' => 'manage_options',
+    ],
+];
+```
+
+The options of the project replace the default ones, except `headers` and `restApi`, which are merged with them:
+
+```php
+// config/security.php of the project
+return [
+    'disableOEmbed' => false,
+    'headers' => [
+        'Permissions-Policy' => 'camera=(), microphone=(), geolocation=()',
+    ],
+];
+```
+
+## HTTP headers
+
+`headers` are sent on the front-end responses (not in the administration). Set a header to `null` to not send it:
+
+```php
+'headers' => [
+    'X-Frame-Options' => null,
+],
+```
+
+`Content-Security-Policy` is not sent by default: it depends on the scripts of each site (analytics, maps, payment, ...).
+
+## Options
+
+| Option | Default | Effect |
+|---|---|---|
+| `disableXmlRpc` | `true` | Disables the XML-RPC methods requiring authentication, removes the `X-Pingback` header and the RSD / WLW links |
+| `hideVersion` | `true` | Removes the generator tag and the `ver` query argument of the front-end scripts and styles |
+| `preventUserEnumeration` | `true` | Returns a 404 on the author pages and the `?author=` requests, the author links point to the home page |
+| `disableOEmbed` | `true` | Disables the oEmbed routes, discovery links and rewrite rules |
+| `hideRestApiDiscovery` | `true` | Removes the links advertising the REST API (head, HTTP header, RSD) |
+| `disableAdminRedirects` | `true` | Disables the redirections of `/admin`, `/login`, `/dashboard`, `/wp-admin` and `/wp-login.php`, so that a custom admin location is not revealed |
+| `restApi.restricted` | `false` | Hides the REST routes to the users without the `restApi.capability`, except the `restApi.publicNamespaces` |
+
+### Points of attention
+
+- `disableXmlRpc` does not block `xmlrpc.php`: the public methods (i.e. `system.listMethods`) still answer. Block the file in the web server configuration to disable XML-RPC completely.
+- `hideVersion` also removes the cache busting of the WordPress and plugins assets: after an update, the browsers can use the old files until their cache expires.
+- `disableOEmbed` removes the rewrite rules on the next flush (Settings > Permalinks > Save).
+- `preventUserEnumeration` disables the author archives: disable it if the theme displays them.
+
+## REST API
+
+With `restApi.restricted`, the visitors only see the routes of the public namespaces:
+
+```php
+'restApi' => [
+    'restricted' => true,
+    'publicNamespaces' => [
+        'app/v1',
+        'wc/store',
+    ],
+],
+```
+
+The users with the capability (`manage_options` by default) see all the routes.
+
+> [!CAUTION]
+> The block editor uses the `wp/v2` routes: the users without the capability (i.e. the editors) can no longer use it. Use a capability they have, i.e. `'capability' => 'edit_posts'`, or add `wp/v2` to the public namespaces.

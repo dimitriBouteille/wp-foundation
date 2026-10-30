@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Facade;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
- * @method static string|null generate(string $name, array<string, mixed> $parameters = [], int $referenceType = UrlGeneratorInterface::ABSOLUTE_PATH)
+ * @method static string generate(string $name, array<string, mixed> $parameters = [], int $referenceType = UrlGeneratorInterface::ABSOLUTE_PATH)
  */
 class Router extends Facade
 {
