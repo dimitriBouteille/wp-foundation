@@ -6,29 +6,93 @@
 
 Lightweight application foundation for WordPress: service container, attribute-based routing and WP-CLI commands, Twig views, validation, cache and security hardening, built on Symfony and Illuminate components.
 
+> [!TIP]
+> To simplify the integration of this library, we recommend using WordPress with [Bedrock](https://roots.io/bedrock/): the application lives next to WordPress and is installed with Composer.
+
+## Features
+
+- ✅ Service container ([Illuminate](https://laravel.com/docs/container)) with service providers and facades
+- ✅ Configuration files merged with the default configuration of the package
+- ✅ Routing with PHP attributes on top of [Symfony Routing](https://symfony.com/doc/current/routing.html), controllers discovered from PSR-4 namespaces (wildcards supported)
+- ✅ HTTP responses (view, redirect, JSON, errors) and HTTP exceptions
+- ✅ WP-CLI commands declared with a `#[Command]` attribute
+- ✅ Twig views with WordPress functions, assets (Vite manifest) and image resizing (WebP)
+- ✅ Validation with [Symfony Validator](https://symfony.com/doc/current/validation.html), messages translated with the WordPress translations
+- ✅ Cache ([Symfony Cache](https://symfony.com/doc/current/components/cache.html)) disabled outside production, cleared with `wp app:cache:clear`
+- ✅ Security hardening (HTTP headers, XML-RPC, REST API, user enumeration, ...)
+
 ## Installation
+
+Requires PHP 8.3+.
 
 ```bash
 composer require dbout/wp-foundation
 ```
 
-Requires PHP 8.3+.
-
-## Usage
+## Quick start
 
 Create the application in a mu-plugin:
 
 ```php
 use Dbout\WpFoundation\Application;
 
+$basePath = dirname(__DIR__, 3);
+
 Application::configure($basePath)
     ->withPaths(config: $basePath . '/config', bootstrap: $basePath . '/bootstrap')
     ->create();
 ```
 
-- `config/*.php`: configuration merged with the default one of the package (see the `config` directory).
-- `bootstrap/providers.php`: list of the service providers of the project.
+Declare where the controllers and the templates are:
 
-## License
+```php
+// config/router.php
+return [
+    'namespaces' => [
+        'App\\Controller\\',
+    ],
+];
 
-MIT
+// config/twig.php: the `views` directory of `app` is the `@app` Twig namespace
+return [
+    'modules' => [
+        dirname(__DIR__) . '/app',
+    ],
+];
+```
+
+And add a controller:
+
+```php
+namespace App\Controller;
+
+use Dbout\WpFoundation\Http\Response\ResponseInterface;
+use Dbout\WpFoundation\Http\Response\ViewResponse;
+use Dbout\WpFoundation\Routing\Attribute\Route;
+
+#[Route(path: '/hello/{name}', name: 'hello', methods: ['GET'])]
+final class Hello
+{
+    public function __invoke(string $name): ResponseInterface
+    {
+        return new ViewResponse('@app/hello.twig', ['name' => $name]);
+    }
+}
+```
+
+See [Getting started](docs/getting-started.md) for the details.
+
+## Documentation
+
+- [Getting started](docs/getting-started.md)
+
+## Contributing
+
+💕 🦄 We encourage you to contribute to this repository, so everyone can benefit from new features, bug fixes, and any other improvements.
+
+```bash
+composer install
+composer csFixer   # code style
+composer rector    # refactoring
+composer phpstan   # static analysis
+```
