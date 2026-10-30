@@ -39,8 +39,8 @@ Only these components are installed, not the full frameworks: WordPress keeps it
 - ✅ Cache ([Symfony Cache](https://symfony.com/doc/current/components/cache.html)) disabled outside production, cleared with `wp app:cache:clear`
 - ✅ Security hardening (HTTP headers, XML-RPC, REST API, user enumeration, ...)
 
-> [!WARNING]
-> Most of the [security protections](docs/security.md) are enabled by default: installing the package disables XML-RPC, oEmbed, the author pages and the `/admin` redirection. Review them before installing the package on an existing site.
+> [!TIP]
+> Only the [security protections](docs/security.md) without visible effect are enabled by default: enable the others (version, author pages, oEmbed, admin redirections) according to your site.
 
 ## Requirements
 

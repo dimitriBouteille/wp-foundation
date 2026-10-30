@@ -258,6 +258,20 @@ enum AppDirectory implements DirectoryInterface
 }
 ```
 
+## Find classes
+
+`ClassFinder` finds the classes of a PSR-4 namespace, like the router and the console do. It can be used to discover your own classes, e.g. blocks or post types:
+
+```php
+use Dbout\WpFoundation\Support\ClassFinder;
+
+foreach ((new ClassFinder())->find('App\\Modules\\*\\Blocks\\') as $class) {
+    // $class is the name of a concrete class (the abstract classes, the interfaces and the traits are skipped)
+}
+```
+
+The namespace can contain `*` wildcards. A namespace without wildcard must exist in the Composer autoloader, otherwise an `InvalidArgumentException` is thrown. The files must follow PSR-4 (see [Routing](routing.md#discovery)).
+
 ## Facades
 
 | Facade | Service |

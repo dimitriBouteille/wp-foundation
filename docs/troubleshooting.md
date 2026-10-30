@@ -49,7 +49,3 @@ sudo -u www-data wp app:cache:clear
 ## The validation messages are in English
 
 The translations are loaded on `init` for the locale of the site. Check the locale (Settings > General > Site Language) and that a translation exists for it (see [Validation](validation.md#translations)).
-
-## The site behaves differently after installing the package
-
-Most of the security protections are enabled by default (no XML-RPC, no oEmbed, no author pages, ...). See [Security](security.md) to disable them.

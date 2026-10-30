@@ -7,6 +7,9 @@ declare(strict_types=1);
 
 namespace Dbout\WpFoundation\Filesystem;
 
+/**
+ * @internal
+ */
 class Filesystem
 {
     /**

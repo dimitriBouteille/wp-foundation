@@ -42,11 +42,11 @@ The default configuration of the package is in the [config](../config) directory
 |---|---|---|
 | `headers` (merged) | `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` | HTTP headers of the front-end responses |
 | `disableXmlRpc` | `true` | |
-| `hideVersion` | `true` | |
-| `preventUserEnumeration` | `true` | |
-| `disableOEmbed` | `true` | |
+| `hideVersion` | `false` | |
+| `preventUserEnumeration` | `false` | |
+| `disableOEmbed` | `false` | |
 | `hideRestApiDiscovery` | `true` | |
-| `disableAdminRedirects` | `true` | |
+| `disableAdminRedirects` | `false` | |
 | `restApi` (merged) | `restricted: false`, `publicNamespaces: []`, `capability: 'manage_options'` | |
 
 See [Security](security.md) for the effect of each option.

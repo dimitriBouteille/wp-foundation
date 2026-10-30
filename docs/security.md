@@ -2,8 +2,7 @@
 
 The package hardens WordPress with the options of `config/security.php`.
 
-> [!WARNING]
-> Most of the protections are **enabled by default**: installing the package changes the behavior of the site (no XML-RPC, no oEmbed, no author pages, no `/admin` redirection, ...). Review the options below and disable the ones you need in `config/security.php`.
+Only the protections without visible effect are enabled by default (HTTP headers, XML-RPC, REST API discovery). The others change the behavior of the site: enable the ones you need in `config/security.php`.
 
 ## Default configuration
 
@@ -16,11 +15,11 @@ return [
         'Referrer-Policy' => 'strict-origin-when-cross-origin',
     ],
     'disableXmlRpc' => true,
-    'hideVersion' => true,
-    'preventUserEnumeration' => true,
-    'disableOEmbed' => true,
+    'hideVersion' => false,
+    'preventUserEnumeration' => false,
+    'disableOEmbed' => false,
     'hideRestApiDiscovery' => true,
-    'disableAdminRedirects' => true,
+    'disableAdminRedirects' => false,
     'restApi' => [
         'restricted' => false,
         'publicNamespaces' => [],
@@ -34,7 +33,7 @@ The options of the project replace the default ones, except `headers` and `restA
 ```php
 // config/security.php of the project
 return [
-    'disableOEmbed' => false,
+    'disableOEmbed' => true,
     'headers' => [
         'Permissions-Policy' => 'camera=(), microphone=(), geolocation=()',
     ],
@@ -58,11 +57,11 @@ return [
 | Option | Default | Effect |
 |---|---|---|
 | `disableXmlRpc` | `true` | Disables the XML-RPC methods requiring authentication, removes the `X-Pingback` header and the RSD / WLW links |
-| `hideVersion` | `true` | Removes the generator tag and the `ver` query argument of the front-end scripts and styles |
-| `preventUserEnumeration` | `true` | Returns a 404 on the author pages and the `?author=` requests, the author links point to the home page |
-| `disableOEmbed` | `true` | Disables the oEmbed routes, discovery links and rewrite rules |
+| `hideVersion` | `false` | Removes the generator tag and the `ver` query argument of the front-end scripts and styles |
+| `preventUserEnumeration` | `false` | Returns a 404 on the author pages and the `?author=` requests, the author links point to the home page |
+| `disableOEmbed` | `false` | Disables the oEmbed routes, discovery links and rewrite rules |
 | `hideRestApiDiscovery` | `true` | Removes the links advertising the REST API (head, HTTP header, RSD) |
-| `disableAdminRedirects` | `true` | Disables the redirections of `/admin`, `/login`, `/dashboard`, `/wp-admin` and `/wp-login.php`, so that a custom admin location is not revealed |
+| `disableAdminRedirects` | `false` | Disables the redirections of `/admin`, `/login`, `/dashboard`, `/wp-admin` and `/wp-login.php`, so that a custom admin location is not revealed |
 | `restApi.restricted` | `false` | Hides the REST routes to the users without the `restApi.capability`, except the `restApi.publicNamespaces` |
 
 ### Points of attention
@@ -70,7 +69,7 @@ return [
 - `disableXmlRpc` does not block `xmlrpc.php`: the public methods (e.g. `system.listMethods`) still answer. Block the file in the web server configuration to disable XML-RPC completely.
 - `hideVersion` also removes the cache busting of the WordPress and plugins assets: after an update, the browsers can use the old files until their cache expires.
 - `disableOEmbed` removes the rewrite rules on the next flush (Settings > Permalinks > Save).
-- `preventUserEnumeration` disables the author archives: disable it if the theme displays them.
+- `preventUserEnumeration` disables the author archives: do not enable it if the theme displays them.
 
 ## REST API
 

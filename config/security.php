@@ -23,17 +23,17 @@ return [
     /**
      * Remove the generator tag and the `ver` query argument of the front-end scripts and styles.
      */
-    'hideVersion' => true,
+    'hideVersion' => false,
 
     /**
      * Return a 404 on the author archives and the `?author=` requests.
      */
-    'preventUserEnumeration' => true,
+    'preventUserEnumeration' => false,
 
     /**
      * Disable the oEmbed routes, links and rewrite rules.
      */
-    'disableOEmbed' => true,
+    'disableOEmbed' => false,
 
     /**
      * Remove the links advertising the REST API.
@@ -44,7 +44,7 @@ return [
      * Disable the redirections of `/admin`, `/login`, `/dashboard`, `/wp-admin` and `/wp-login.php` to the admin and login pages,
      * so that a custom admin location is not revealed.
      */
-    'disableAdminRedirects' => true,
+    'disableAdminRedirects' => false,
 
     'restApi' => [
         /**
