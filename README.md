@@ -1,10 +1,28 @@
-# 🧱 WordPress Foundation
+# WordPress Foundation
 
 [![GitHub Release](https://img.shields.io/github/v/release/dimitriBouteille/wp-foundation)](https://github.com/dimitriBouteille/wp-foundation/releases)
 [![Compatibility](https://img.shields.io/github/actions/workflow/status/dimitriBouteille/wp-foundation/compatibility.yml?label=compatibility)](https://github.com/dimitriBouteille/wp-foundation/actions/workflows/compatibility.yml)
 [![Packagist Downloads](https://img.shields.io/packagist/dt/dbout/wp-foundation?color=yellow)](https://packagist.org/packages/dbout/wp-foundation)
 
 Lightweight application foundation for WordPress: service container, attribute-based routing and WP-CLI commands, Twig views, validation, cache and security hardening, built on Symfony and Illuminate components.
+
+## Philosophy
+
+WordPress is a great CMS, but building a business application on top of it often ends with code scattered in `functions.php`, global functions and hooks everywhere. This package brings the structure of a modern PHP application to WordPress, **without replacing WordPress**:
+
+- **WordPress stays in charge.** The content, the admin, the plugins and the hooks work as usual: the package only adds what WordPress lacks (a container, controllers, a validator, ...). An URL without a route is handled by WordPress.
+- **Proven components, no reinvented wheel.** The routing, the validation and the cache come from Symfony, the container and the logger from Illuminate: their documentation and their knowledge apply here.
+- **Configuration over code.** The behavior is driven by configuration files merged with sensible defaults, and the classes are discovered from their PSR-4 namespaces: adding a controller or a command is adding a class.
+- **Lightweight and explicit.** No magic: a provider registers services and adds hooks, a controller returns a response. The package stays small enough to be read and understood.
+
+### The best of Laravel and Symfony
+
+Rather than choosing a side, the package takes from each framework what it does best, as standalone components:
+
+- **From Laravel**, the developer experience: a container with automatic injection, service providers, facades, configuration files and a logger that are simple to use day to day.
+- **From Symfony**, the robust and well-tested building blocks: routing, HTTP foundation, validation and cache, used by thousands of projects (Laravel itself relies on several of them).
+
+Only these components are installed, not the full frameworks: WordPress keeps its own bootstrap, and the package stays light.
 
 > [!TIP]
 > To simplify the integration of this library, we recommend using WordPress with [Bedrock](https://roots.io/bedrock/): the application lives next to WordPress and is installed with Composer.
