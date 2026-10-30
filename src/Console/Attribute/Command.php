@@ -14,7 +14,7 @@ namespace Dbout\WpFoundation\Console\Attribute;
 readonly class Command
 {
     /**
-     * @param string $name                  The command name (i.e. "app:cache:clear")
+     * @param string $name                  The command name (e.g. "app:cache:clear")
      * @param string|null $description      The short description displayed by `wp help`
      */
     public function __construct(

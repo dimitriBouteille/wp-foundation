@@ -35,7 +35,7 @@ $sessions = Cache::get('next_sessions_' . $productId, function (ItemInterface $i
     return $this->sessions->findNext($productId);
 });
 
-// i.e. when a session is saved
+// e.g. when a session is saved
 Cache::invalidateTags(['product_' . $productId]);
 ```
 

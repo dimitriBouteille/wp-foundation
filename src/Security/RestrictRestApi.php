@@ -13,7 +13,7 @@ namespace Dbout\WpFoundation\Security;
 final readonly class RestrictRestApi
 {
     /**
-     * @param string[] $publicNamespaces Namespaces available to everyone (i.e. "app/v2")
+     * @param string[] $publicNamespaces Namespaces available to everyone (e.g. "app/v2")
      */
     public function __construct(
         private array $publicNamespaces,

@@ -59,4 +59,4 @@ $url = $resizer->toWebp($resizer->resize($image->src(), 800, 600));
 
 ## Generated files
 
-The generated files are deleted with the attachment, and when its thumbnails are regenerated (i.e. with `wp media regenerate`).
+The generated files are deleted with the attachment, and when its thumbnails are regenerated (e.g. with `wp media regenerate`).

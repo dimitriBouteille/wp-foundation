@@ -65,7 +65,7 @@ return [
 ];
 ```
 
-A namespace can contain `*` wildcards, i.e. to find the controllers of all the modules:
+A namespace can contain `*` wildcards, e.g. to find the controllers of all the modules:
 
 ```php
 'namespaces' => [

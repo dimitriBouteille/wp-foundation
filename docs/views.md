@@ -90,7 +90,7 @@ The `site` global contains the information of the site:
 | Function | Description |
 |---|---|
 | `asset_url('area::file')` | URL of an asset |
-| `asset_content('area::file')` | Content of an asset, i.e. to inline an SVG |
+| `asset_content('area::file')` | Content of an asset, e.g. to inline an SVG |
 
 See [Assets](#assets).
 

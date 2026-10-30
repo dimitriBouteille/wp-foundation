@@ -46,6 +46,10 @@
         "phpstan/phpstan": "2.3.4",
         "rector/rector": "2.8.3"
     },
+    "suggest": {
+        "ext-gd": "Required by the towebp Twig filter (with the WebP support)",
+        "wp-cli/wp-cli": "Required by the commands"
+    },
     "autoload": {
         "psr-4": {
             "Dbout\\WpFoundation\\": "src/"

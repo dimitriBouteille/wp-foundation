@@ -10,7 +10,7 @@ namespace Dbout\WpFoundation\Cache\Clearer;
 use Dbout\WpFoundation\Filesystem\Filesystem;
 
 /**
- * Deletes a cache directory (i.e. the compiled Twig templates).
+ * Deletes a cache directory (e.g. the compiled Twig templates).
  */
 final readonly class DirectoryCacheClearer implements CacheClearerInterface
 {

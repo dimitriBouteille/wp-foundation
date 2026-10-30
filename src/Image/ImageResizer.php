@@ -82,7 +82,7 @@ final class ImageResizer
      * and of its related files. Nothing else is deleted when the image is a WebP: the related WebP files are the WordPress ones.
      *
      * @param string $path Absolute path of the source image.
-     * @param string[] $relatedFiles Absolute paths of the other files of the image (i.e. the WordPress sizes).
+     * @param string[] $relatedFiles Absolute paths of the other files of the image (e.g. the WordPress sizes).
      */
     public function deleteGeneratedFiles(string $path, array $relatedFiles = []): void
     {

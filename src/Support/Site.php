@@ -24,7 +24,7 @@ final class Site
      *
      * WordPress stores it with the HTML special chars encoded, they are decoded so that the value is escaped only once on output.
      *
-     * @return string The decoded title, i.e. "L'UDPS 69"
+     * @return string The decoded title, e.g. "My site"
      */
     public function getName(): string
     {
@@ -34,7 +34,7 @@ final class Site
     /**
      * Returns the URL of the home page of the site.
      *
-     * @return string The home URL without trailing slash, i.e. "https://udps69.fr"
+     * @return string The home URL without trailing slash, e.g. "https://example.com"
      */
     public function getUrl(): string
     {
@@ -56,7 +56,7 @@ final class Site
     /**
      * Returns the language of the site, in the format expected by the HTML `lang` attribute.
      *
-     * @return string The language code, i.e. "fr-FR" (unlike the locale "fr_FR")
+     * @return string The language code, e.g. "fr-FR" (unlike the locale "fr_FR")
      */
     public function getLanguage(): string
     {
@@ -66,7 +66,7 @@ final class Site
     /**
      * Returns the charset of the site, used for the `<meta charset>` tag.
      *
-     * @return string The charset, i.e. "UTF-8"
+     * @return string The charset, e.g. "UTF-8"
      */
     public function getCharset(): string
     {

@@ -10,7 +10,7 @@ Lightweight application foundation for WordPress: service container, attribute-b
 
 WordPress is a great CMS, but building a business application on top of it often ends with code scattered in `functions.php`, global functions and hooks everywhere. This package brings the structure of a modern PHP application to WordPress, **without replacing WordPress**:
 
-- **WordPress stays in charge.** The content, the admin, the plugins and the hooks work as usual: the package only adds what WordPress lacks (a container, controllers, a validator, ...). An URL without a route is handled by WordPress.
+- **WordPress stays in charge.** The content, the admin, the plugins and the hooks work as usual: the package only adds what WordPress lacks (a container, controllers, a validator, ...). A URL without a route is handled by WordPress.
 - **Proven components, no reinvented wheel.** The routing, the validation and the cache come from Symfony, the container and the logger from Illuminate: their documentation and their knowledge apply here.
 - **Configuration over code.** The behavior is driven by configuration files merged with sensible defaults, and the classes are discovered from their PSR-4 namespaces: adding a controller or a command is adding a class.
 - **Lightweight and explicit.** No magic: a provider registers services and adds hooks, a controller returns a response. The package stays small enough to be read and understood.
@@ -42,9 +42,18 @@ Only these components are installed, not the full frameworks: WordPress keeps it
 > [!WARNING]
 > Most of the [security protections](docs/security.md) are enabled by default: installing the package disables XML-RPC, oEmbed, the author pages and the `/admin` redirection. Review them before installing the package on an existing site.
 
-## Installation
+## Requirements
 
-Requires PHP 8.3+.
+| Requirement | Version | Used by |
+|---|---|---|
+| PHP | 8.3+ | |
+| WordPress | 5.6+ | |
+| [WP-CLI](https://wp-cli.org/) | 2.x | The commands (optional) |
+| PHP GD extension with WebP | | The `towebp` filter (optional) |
+
+WordPress must load the Composer autoloader (`vendor/autoload.php`), it is the case with [Bedrock](https://roots.io/bedrock/).
+
+## Installation
 
 ```bash
 composer require dbout/wp-foundation

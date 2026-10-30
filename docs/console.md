@@ -79,7 +79,7 @@ The command runs the cache clearers, then the `app_cache_cleared` action. The pa
 - the cache pool (`var/cache/data`),
 - the compiled Twig templates (`var/cache/twig`).
 
-The command fails (exit code 1) when a cache cannot be cleared, i.e. when the files belong to another user: run it with the user of the web server on deployment.
+The command fails (exit code 1) when a cache cannot be cleared, e.g. when the files belong to another user: run it with the user of the web server on deployment.
 
 ### Add a cache
 

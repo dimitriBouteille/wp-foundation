@@ -77,7 +77,7 @@ final class ApplicationBuilder
     }
 
     /**
-     * Set a custom absolute path for a directory (i.e. `Directory::Cache`), instead of its default path relative to the base path.
+     * Set a custom absolute path for a directory (e.g. `Directory::Cache`), instead of its default path relative to the base path.
      *
      * @return $this
      */

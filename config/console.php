@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 return [
     /**
-     * PSR-4 namespaces of the classes with the `#[Command]` attribute (i.e. `App\Command\` or `App\*\Command\`).
+     * PSR-4 namespaces of the classes with the `#[Command]` attribute (e.g. `App\Command\` or `App\*\Command\`).
      */
     'namespaces' => [
         'Dbout\\WpFoundation\\*\\Console\\',

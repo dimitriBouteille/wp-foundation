@@ -11,8 +11,8 @@ namespace Dbout\WpFoundation\Routing\Attribute;
 readonly class Route
 {
     /**
-     * @param string $path                              The route path (i.e. "/user/login")
-     * @param string|null $name                         The route name (i.e. "app_user_login")
+     * @param string $path                              The route path (e.g. "/user/login")
+     * @param string|null $name                         The route name (e.g. "app_user_login")
      * @param string[] $methods                         The list of HTTP methods allowed by this route
      * @param array<string|\Stringable> $requirements   Requirements for the route attributes, @see https://symfony.com/doc/current/routing.html#parameters-validation
      */

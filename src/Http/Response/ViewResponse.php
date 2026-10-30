@@ -23,7 +23,7 @@ use Dbout\WpFoundation\View\ViewRendererInterface;
 class ViewResponse implements ResponseInterface
 {
     /**
-     * @param string $template  The Twig template (i.e. "features/account/pages/create-account.tw.twig")
+     * @param string $template  The Twig template (e.g. "@account/register.twig")
      * @param array<string, mixed> $context    Data passed to the template
      * @param int $status       The HTTP status code
      */

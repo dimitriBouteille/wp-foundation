@@ -33,7 +33,7 @@ abstract class AbstractResolver implements ResolverInterface
     }
 
     /**
-     * Returns the string found by following the keys in the manifest, i.e. `getManifestValue('main.js', 'css', 0)`.
+     * Returns the string found by following the keys in the manifest, e.g. `getManifestValue('main.js', 'css', 0)`.
      *
      * @throws \Exception
      */

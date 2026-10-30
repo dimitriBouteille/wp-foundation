@@ -21,7 +21,7 @@ interface CacheClearerInterface
     public const string TAG = 'cache.clearers';
 
     /**
-     * Name displayed by the command (i.e. "Twig templates").
+     * Name displayed by the command (e.g. "Twig templates").
      */
     public function getName(): string;
 

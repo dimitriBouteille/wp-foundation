@@ -54,7 +54,7 @@ final class Application extends Container
     protected bool $booted = false;
 
     /**
-     * @param string $basePath Absolute path of the project root (the directories, i.e. `var`, are relative to it)
+     * @param string $basePath Absolute path of the project root (the directories, e.g. `var`, are relative to it)
      */
     public function __construct(
         string $basePath,
@@ -65,7 +65,7 @@ final class Application extends Container
     }
 
     /**
-     * Called by the Illuminate components (i.e. {@see \Illuminate\Log\LogManager}), the project has no test environment.
+     * Called by the Illuminate components (e.g. {@see \Illuminate\Log\LogManager}), the project has no test environment.
      */
     public function runningUnitTests(): bool
     {
@@ -92,7 +92,7 @@ final class Application extends Container
     }
 
     /**
-     * Whether the `app.env` config equals the given environment (i.e. "production", "staging", "development").
+     * Whether the `app.env` config equals the given environment (e.g. "production", "staging", "development").
      *
      * @throws Throwable
      */

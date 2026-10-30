@@ -16,7 +16,7 @@ namespace Dbout\WpFoundation\Filesystem;
  * path resolution across the codebase.
  *
  * A directory can be moved with a custom absolute path, the other directories keep their default path
- * (i.e. a custom {@see Directory::Var} does not move {@see Directory::Cache}).
+ * (e.g. a custom {@see Directory::Var} does not move {@see Directory::Cache}).
  */
 readonly class DirectoryList
 {
@@ -32,7 +32,7 @@ readonly class DirectoryList
 
     /**
      * @param string $root The absolute path to the application root directory
-     * @param array<array{DirectoryInterface, string}> $paths Custom absolute paths of the directories, i.e. `[[Directory::Cache, '/tmp/cache']]`
+     * @param array<array{DirectoryInterface, string}> $paths Custom absolute paths of the directories, e.g. `[[Directory::Cache, '/tmp/cache']]`
      */
     public function __construct(string $root, array $paths = [])
     {

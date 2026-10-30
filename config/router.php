@@ -15,7 +15,7 @@ declare(strict_types=1);
  */
 return [
     /**
-     * PSR-4 namespaces of the controller classes (i.e. `App\Controller\` or `App\*\Controller\`), the directories are resolved from the Composer autoload.
+     * PSR-4 namespaces of the controller classes (e.g. `App\Controller\` or `App\*\Controller\`), the directories are resolved from the Composer autoload.
      */
     'namespaces' => [],
 

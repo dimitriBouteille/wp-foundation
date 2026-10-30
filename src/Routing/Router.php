@@ -77,7 +77,7 @@ final class Router implements RouterInterface
     }
 
     /**
-     * Add the routes of the controllers of the given PSR-4 namespaces (i.e. `App\Controller\`).
+     * Add the routes of the controllers of the given PSR-4 namespaces (e.g. `App\Controller\`).
      *
      * @param string[] $namespaces
      * @throws \Exception

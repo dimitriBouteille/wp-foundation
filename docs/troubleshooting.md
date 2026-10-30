@@ -6,7 +6,7 @@
 - Check that the file follows PSR-4: the class name is derived from the file path, a class named differently from its file is ignored.
 - The trailing slash is ignored: `/account/register/` matches the `/account/register` route.
 - A route only matches its `methods`: a `POST` on a `GET` route is handled by WordPress (404).
-- The routes are matched on `init`: a plugin redirecting earlier (i.e. on `plugins_loaded`) takes precedence.
+- The routes are matched on `init`: a plugin redirecting earlier (e.g. on `plugins_loaded`) takes precedence.
 
 ## "Cannot declare class ..." fatal error
 
@@ -23,7 +23,7 @@ The Twig environment uses `strict_variables`. Check that the variable exists wit
 
 ## The controller must return an instance of ResponseInterface
 
-The action returned something else than a [response](routing.md#responses), i.e. it echoed the HTML and returned nothing. Return a `ViewResponse` instead.
+The action returned something other than a [response](routing.md#responses), e.g. it echoed the HTML and returned nothing. Return a `ViewResponse` instead.
 
 ## The changes are not visible in production
 
@@ -35,7 +35,7 @@ wp app:cache:clear
 
 ## app:cache:clear fails with "Unable to delete ..."
 
-The cache files belong to the user of the web server (i.e. `www-data`) and the command is run with another user. Run it with the user of the web server:
+The cache files belong to the user of the web server (e.g. `www-data`) and the command is run with another user. Run it with the user of the web server:
 
 ```bash
 sudo -u www-data wp app:cache:clear

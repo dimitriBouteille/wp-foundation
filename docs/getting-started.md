@@ -6,7 +6,16 @@
 composer require dbout/wp-foundation
 ```
 
-The package requires PHP 8.3+ and is loaded with the Composer autoloader, so WordPress must load `vendor/autoload.php` (it is the case with [Bedrock](https://roots.io/bedrock/)).
+The package is loaded with the Composer autoloader, so WordPress must load `vendor/autoload.php` (it is the case with [Bedrock](https://roots.io/bedrock/)).
+
+| Requirement | Version | Used by |
+|---|---|---|
+| PHP | 8.3+ | |
+| WordPress | 5.6+ | |
+| [WP-CLI](https://wp-cli.org/) | 2.x | The [commands](console.md) (optional) |
+| PHP GD extension with WebP | | The [`towebp` filter](images.md#resize-and-convert) (optional) |
+
+The `resize` filter uses the image editor of WordPress (GD or Imagick).
 
 ## Create the application
 
@@ -49,7 +58,7 @@ init (priority 10)              the router matches the URL
 cli_init                        the WP-CLI commands are registered (WP-CLI only)
 ```
 
-The application is created before the plugins are loaded: the services are available in the plugins and the theme, but a service provider must use hooks (i.e. `plugins_loaded`, `init`) to use the functions of the plugins.
+The application is created before the plugins are loaded: the services are available in the plugins and the theme, but a service provider must use hooks (e.g. `plugins_loaded`, `init`) to use the functions of the plugins.
 
 The controllers are executed on `init` with the priority 10: the callbacks of `init` with a higher priority are not executed when the response stops the script (redirection, JSON, ...).
 
@@ -143,7 +152,7 @@ $gateway = app()->make(PaymentGateway::class);
 
 The dependencies are injected automatically: a class whose constructor asks for `OrderRepository` receives it without any binding. It is the case for the controllers, the commands and the Twig extensions given as class names (the service providers only receive the application).
 
-Services can be grouped with tags, i.e. the [cache clearers](console.md#add-a-cache):
+Services can be grouped with tags, e.g. the [cache clearers](console.md#add-a-cache):
 
 ```php
 $this->app->tag([PdfCacheClearer::class, ExportCacheClearer::class], 'app.clearers');

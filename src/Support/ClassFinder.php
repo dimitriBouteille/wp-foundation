@@ -10,10 +10,10 @@ namespace Dbout\WpFoundation\Support;
 use Composer\Autoload\ClassLoader;
 
 /**
- * Finds the concrete classes of a PSR-4 namespace (i.e. `App\Controller\`): the directories are resolved
+ * Finds the concrete classes of a PSR-4 namespace (e.g. `App\Controller\`): the directories are resolved
  * from the Composer autoloaders and the class names are derived from the file paths.
  *
- * The namespace can contain `*` wildcards (i.e. `App\*\Controller\`), the matching directories are found with `glob()`.
+ * The namespace can contain `*` wildcards (e.g. `App\*\Controller\`), the matching directories are found with `glob()`.
  */
 class ClassFinder
 {

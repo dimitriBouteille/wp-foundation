@@ -67,7 +67,7 @@ return [
 
 ### Points of attention
 
-- `disableXmlRpc` does not block `xmlrpc.php`: the public methods (i.e. `system.listMethods`) still answer. Block the file in the web server configuration to disable XML-RPC completely.
+- `disableXmlRpc` does not block `xmlrpc.php`: the public methods (e.g. `system.listMethods`) still answer. Block the file in the web server configuration to disable XML-RPC completely.
 - `hideVersion` also removes the cache busting of the WordPress and plugins assets: after an update, the browsers can use the old files until their cache expires.
 - `disableOEmbed` removes the rewrite rules on the next flush (Settings > Permalinks > Save).
 - `preventUserEnumeration` disables the author archives: disable it if the theme displays them.
@@ -89,4 +89,4 @@ With `restApi.restricted`, the visitors only see the routes of the public namesp
 The users with the capability (`manage_options` by default) see all the routes.
 
 > [!CAUTION]
-> The block editor uses the `wp/v2` routes: the users without the capability (i.e. the editors) can no longer use it. Use a capability they have, i.e. `'capability' => 'edit_posts'`, or add `wp/v2` to the public namespaces.
+> The block editor uses the `wp/v2` routes: the users without the capability (e.g. the editors) can no longer use it. Use a capability they have, e.g. `'capability' => 'edit_posts'`, or add `wp/v2` to the public namespaces.

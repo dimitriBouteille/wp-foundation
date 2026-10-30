@@ -10,7 +10,7 @@ namespace Dbout\WpFoundation\Routing\Loader;
 use Dbout\WpFoundation\Support\ClassFinder;
 
 /**
- * Loads the routes of the classes of a PSR-4 namespace, wildcards supported (i.e. `App\*\Controller\`), see {@see ClassFinder}.
+ * Loads the routes of the classes of a PSR-4 namespace, wildcards supported (e.g. `App\*\Controller\`), see {@see ClassFinder}.
  */
 class NamespaceLoader implements InterfaceLoader
 {

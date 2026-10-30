@@ -11,7 +11,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Contracts\Translation\TranslatorTrait;
 
 /**
- * Symfony translator using the WordPress translations (i.e. to translate the validation messages).
+ * Symfony translator using the WordPress translations (e.g. to translate the validation messages).
  *
  * The message is translated with `translate()`, then the parameters and the pluralization (`%count%`) are applied
  * like the Symfony translator.
