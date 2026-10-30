@@ -125,6 +125,36 @@ app()->isProduction();
 app()->isEnvironment('staging');
 ```
 
+## Container
+
+The application is an [Illuminate container](https://laravel.com/docs/10.x/container): the services are bound in the service providers, then resolved anywhere with the `app()` helper.
+
+```php
+// In the register() method of a service provider
+$this->app->singleton(OrderRepository::class);                     // one instance, built on the first use
+$this->app->bind(PaymentGateway::class, StripeGateway::class);      // a new instance on each resolution
+$this->app->instance('app.settings', new Settings($options));       // an existing instance
+```
+
+```php
+$orders = app(OrderRepository::class);
+$gateway = app()->make(PaymentGateway::class);
+```
+
+The dependencies are injected automatically: a class whose constructor asks for `OrderRepository` receives it without any binding. It is the case for the controllers, the commands and the Twig extensions given as class names (the service providers only receive the application).
+
+Services can be grouped with tags, i.e. the [cache clearers](console.md#add-a-cache):
+
+```php
+$this->app->tag([PdfCacheClearer::class, ExportCacheClearer::class], 'app.clearers');
+
+foreach (app()->tagged('app.clearers') as $clearer) {
+    // ...
+}
+```
+
+See the [Laravel documentation](https://laravel.com/docs/10.x/container) for the other features (contextual binding, extenders, ...).
+
 ## Service providers
 
 The service providers of the project are listed in `bootstrap/providers.php`:

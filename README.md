@@ -87,6 +87,8 @@ See [Getting started](docs/getting-started.md) for the details.
 
 ## Documentation
 
+The documentation is in the [docs](docs/README.md) directory:
+
 - [Getting started](docs/getting-started.md)
 - [Configuration reference](docs/configuration.md)
 - [Routing](docs/routing.md)
@@ -101,11 +103,4 @@ See [Getting started](docs/getting-started.md) for the details.
 
 ## Contributing
 
-💕 🦄 We encourage you to contribute to this repository, so everyone can benefit from new features, bug fixes, and any other improvements.
-
-```bash
-composer install
-composer csFixer   # code style
-composer rector    # refactoring
-composer phpstan   # static analysis
-```
+💕 🦄 We encourage you to contribute to this repository, so everyone can benefit from new features, bug fixes, and any other improvements. Have a look at our [contributing guidelines](CONTRIBUTING.md) to find out how to raise a pull request.
