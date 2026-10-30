@@ -88,11 +88,16 @@ See [Getting started](docs/getting-started.md) for the details.
 ## Documentation
 
 - [Getting started](docs/getting-started.md)
+- [Configuration reference](docs/configuration.md)
 - [Routing](docs/routing.md)
 - [Views](docs/views.md)
 - [Validation](docs/validation.md)
 - [Console](docs/console.md)
+- [Cache](docs/cache.md)
+- [Images](docs/images.md)
+- [Logging](docs/logging.md)
 - [Security](docs/security.md)
+- [Troubleshooting](docs/troubleshooting.md)
 
 ## Contributing
 

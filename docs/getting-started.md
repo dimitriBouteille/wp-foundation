@@ -30,6 +30,29 @@ Application::configure($basePath)
 
 `create()` loads the configuration, registers the service providers then boots them. The application is then available everywhere with the `app()` helper or the facades.
 
+## Lifecycle
+
+```
+mu-plugin                       Application::configure()->create()
+ ├─ load the configuration       config/*.php merged with the default configuration
+ ├─ register the providers       register() of each provider (package, then project)
+ └─ boot the providers           boot() of each provider: the WordPress hooks are added
+
+init (priority 0)               the translations of the package are loaded
+init (priority 10)              the router matches the URL
+ ├─ no route                     WordPress handles the request as usual
+ └─ route                        the controller is executed
+     ├─ RedirectResponse, JsonResponse, Response, ErrorResponse   sent immediately (the script stops)
+     ├─ NotFoundResponse                                           WordPress renders its 404 template
+     └─ ViewResponse                                               rendered at the end of template_redirect
+
+cli_init                        the WP-CLI commands are registered (WP-CLI only)
+```
+
+The application is created before the plugins are loaded: the services are available in the plugins and the theme, but a service provider must use hooks (i.e. `plugins_loaded`, `init`) to use the functions of the plugins.
+
+The controllers are executed on `init` with the priority 10: the callbacks of `init` with a higher priority are not executed when the response stops the script (redirection, JSON, ...).
+
 ## Project structure
 
 ```
