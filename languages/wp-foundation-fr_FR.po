@@ -1,0 +1,24 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: wp-foundation\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: wp-foundation\n"
+
+msgid "The field {{ label }} is required."
+msgstr "Le champ {{ label }} est obligatoire."
+
+msgid "The field is required."
+msgstr "Le champ est obligatoire"
+
+msgid "The email address is not valid."
+msgstr "L'adresse email n'est pas valide."
+
+msgid "HTML code is not allowed."
+msgstr "Le code html n'est pas autorisé."
+
+msgid "The date does not have the right format."
+msgstr "La date ne respecte pas le bon format."

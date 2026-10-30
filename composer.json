@@ -1,0 +1,53 @@
+{
+    "name": "dbout/wp-foundation",
+    "description": "Lightweight application foundation for WordPress: service container, attribute-based routing and WP-CLI commands, Twig views, validation, cache and security hardening, built on Symfony and Illuminate components.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["wordpress", "framework", "foundation", "container", "routing", "twig", "validation", "wp-cli", "symfony", "illuminate"],
+    "authors": [
+        {
+            "name": "Dimitri BOUTEILLE",
+            "homepage": "https://github.com/dimitriBouteille"
+        }
+    ],
+    "require": {
+        "php": ">=8.3",
+        "illuminate/config": "^10.25",
+        "illuminate/container": "^10.25",
+        "illuminate/events": "^10.25",
+        "illuminate/log": "^10.25",
+        "illuminate/support": "^10.25",
+        "nesbot/carbon": "^2.73",
+        "psr/cache": "^3.0",
+        "psr/log": "^2.0 || ^3.0",
+        "symfony/cache": "^6.4",
+        "symfony/http-foundation": "^6.4",
+        "symfony/property-access": "^6.4 || ^7.0",
+        "symfony/routing": "^6.3",
+        "symfony/translation-contracts": "^3.0",
+        "symfony/validator": "^6.4",
+        "twig/twig": "^2.16"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.66",
+        "php-stubs/wordpress-stubs": "^6.6",
+        "php-stubs/wp-cli-stubs": "^2.11",
+        "phpstan/phpstan": "^2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dbout\\WpFoundation\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "scripts": {
+        "phpstan": "phpstan analyse",
+        "cs": "php-cs-fixer fix --dry-run --diff",
+        "cs:fix": "php-cs-fixer fix"
+    }
+}

@@ -1,0 +1,12 @@
+parameters:
+    level: 9
+    paths:
+        - src
+        - config
+    bootstrapFiles:
+        - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+        - vendor/php-stubs/wp-cli-stubs/wp-cli-stubs.php
+    ignoreErrors:
+        -
+            identifier: trait.unused
+            path: src/Enums/Concerns/EnumToArrayOptions.php

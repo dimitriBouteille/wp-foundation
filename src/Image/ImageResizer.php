@@ -1,0 +1,288 @@
+<?php
+/**
+ * Copyright (c) Dimitri BOUTEILLE (https://github.com/dimitriBouteille)
+ * See LICENSE.txt for license details.
+ */
+declare(strict_types=1);
+
+namespace Dbout\WpFoundation\Image;
+
+use Dbout\WpFoundation\Facades\Log;
+
+/**
+ * Generates resized and WebP versions of the images, next to the source file.
+ *
+ * The generated files are named like the ones of Timber (`photo-800x600-c-center.jpg`, `photo-800x600-c-center.webp`),
+ * so that the files already generated are reused. A file is generated again when its source is more recent.
+ * On error, the source URL is returned.
+ */
+final class ImageResizer
+{
+    public const array CROP_POSITIONS = ['default', 'center', 'top', 'bottom', 'left', 'right', 'top-center', 'bottom-center'];
+
+    /**
+     * @param int|null $width        0 or null to compute it from the height and the source ratio
+     * @param int|null $height       0 or null to compute it from the width and the source ratio
+     * @param string|false $crop     One of {@see CROP_POSITIONS}, false to resize without cropping
+     */
+    public function resize(?string $src, int|string|null $width, int|string|null $height = 0, string|false $crop = 'default', bool $force = false): string
+    {
+        if ($src === null || $src === '') {
+            return '';
+        }
+
+        if ((!is_numeric($width) && $width !== null) || (!is_numeric($height) && $height !== null)) {
+            return $src;
+        }
+
+        if ($crop !== false && !in_array($crop, self::CROP_POSITIONS, true)) {
+            $crop = 'default';
+        }
+
+        $width = max(0, (int) $width);
+        $height = max(0, (int) $height);
+        if ($width === 0 && $height === 0) {
+            return $src;
+        }
+
+        $source = ImageFile::fromSource($src);
+        if (!$source instanceof ImageFile) {
+            return $src;
+        }
+
+        $target = $source->withBasename(
+            sprintf('%s-%dx%d-c-%s', $source->filename, $width, $height, $crop === false ? 'f' : $crop),
+            $source->extension,
+        );
+
+        return $this->generate($src, $source, $target, $force, fn (): bool => $this->runResize($source, $target, $width, $height, $crop));
+    }
+
+    /**
+     * @param int $quality From 0 (smallest file) to 100 (best quality)
+     */
+    public function toWebp(?string $src, int $quality = 80, bool $force = false): string
+    {
+        if ($src === null || $src === '') {
+            return '';
+        }
+
+        $source = ImageFile::fromSource($src);
+        if (!$source instanceof ImageFile) {
+            return $src;
+        }
+
+        $target = $source->withBasename($source->filename, 'webp');
+
+        return $this->generate($src, $source, $target, $force, fn (): bool => $this->runToWebp($source, $target, $quality));
+    }
+
+    /**
+     * Deletes the resized versions (and their WebP version) generated for an image, and the WebP version of the image
+     * and of its related files. Nothing else is deleted when the image is a WebP: the related WebP files are the WordPress ones.
+     *
+     * @param string $path Absolute path of the source image.
+     * @param string[] $relatedFiles Absolute paths of the other files of the image (i.e. the WordPress sizes).
+     */
+    public function deleteGeneratedFiles(string $path, array $relatedFiles = []): void
+    {
+        $info = pathinfo($path);
+        $extension = strtolower($info['extension'] ?? '');
+        $filename = (string) preg_replace('/([*?\[\]])/', '[$1]', $info['filename']);
+        $files = glob(sprintf('%s/%s-*x*-c-*', $info['dirname'] ?? '', $filename));
+        if (!is_array($files)) {
+            return;
+        }
+
+        $pattern = sprintf(
+            '#^%s-\d+x\d+-c-[a-z-]+\.(%s|webp)$#',
+            preg_quote($info['filename'], '#'),
+            preg_quote($extension, '#'),
+        );
+
+        foreach ($files as $file) {
+            if (preg_match($pattern, basename($file)) === 1 && is_file($file)) {
+                unlink($file);
+            }
+        }
+
+        if ($extension === 'webp') {
+            return;
+        }
+
+        foreach ([$path, ...$relatedFiles] as $file) {
+            $fileInfo = pathinfo($file);
+            if (strtolower($fileInfo['extension'] ?? '') === 'webp') {
+                continue;
+            }
+
+            $webp = ($fileInfo['dirname'] ?? '') . '/' . $fileInfo['filename'] . '.webp';
+            if (is_file($webp)) {
+                unlink($webp);
+            }
+        }
+    }
+
+    /**
+     * @param callable(): bool $run
+     */
+    private function generate(string $src, ImageFile $source, ImageFile $target, bool $force, callable $run): string
+    {
+        $sourcePath = $source->path();
+        $targetPath = $target->path();
+        if (!is_file($sourcePath)) {
+            return $src;
+        }
+
+        if (is_file($targetPath)) {
+            if (!$force && filemtime($sourcePath) <= filemtime($targetPath)) {
+                return $target->url();
+            }
+
+            if ($targetPath === $sourcePath) {
+                return $src;
+            }
+
+            unlink($targetPath);
+        }
+
+        return $run() ? $target->url() : $src;
+    }
+
+    private function runResize(ImageFile $source, ImageFile $target, int $width, int $height, string|false $crop): bool
+    {
+        if ($source->isSvg()) {
+            return false;
+        }
+
+        $editor = wp_get_image_editor($source->path());
+        if (is_wp_error($editor)) {
+            $this->logError(sprintf('Unable to load the image %s: %s', $source->path(), $editor->get_error_message()));
+
+            return false;
+        }
+
+        $current = $editor->get_size();
+        if ((int) $current['width'] <= 0 || (int) $current['height'] <= 0) {
+            $this->logError(sprintf('Unable to resize the image %s: invalid dimensions.', $source->path()));
+
+            return false;
+        }
+
+        $size = $this->getTargetSize(['width' => (int) $current['width'], 'height' => (int) $current['height']], $width, $height, $crop);
+        $editor->crop((int) $size['x'], (int) $size['y'], (int) $size['srcWidth'], (int) $size['srcHeight'], (int) $size['width'], (int) $size['height']);
+        $quality = apply_filters('wp_editor_set_quality', 82, 'image/jpeg');
+        $editor->set_quality(is_numeric($quality) ? (int) $quality : 82);
+
+        $result = $editor->save($target->path());
+        if (is_wp_error($result)) {
+            $this->logError(sprintf('Unable to resize the image %s: %s', $source->path(), $result->get_error_message()));
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Same computation as Timber, so that the regenerated files are identical.
+     *
+     * @param array{width: int, height: int} $current
+     * @return array{x: int|float, y: int|float, srcWidth: int|float, srcHeight: int|float, width: int|float, height: int|float}
+     */
+    private function getTargetSize(array $current, int $width, int $height, string|false $crop): array
+    {
+        $srcWidth = $current['width'];
+        $srcHeight = $current['height'];
+        $srcRatio = $srcWidth / $srcHeight;
+        if ($height === 0) {
+            $height = round($width / $srcRatio);
+        }
+
+        if ($width === 0) {
+            $width = round($height * $srcRatio);
+        }
+
+        if ($crop === false) {
+            return ['x' => 0, 'y' => 0, 'srcWidth' => $srcWidth, 'srcHeight' => $srcHeight, 'width' => $width, 'height' => $height];
+        }
+
+        $destRatio = $width / $height;
+        $cropWidth = $srcHeight * $destRatio;
+        $cropHeight = $srcWidth / $destRatio;
+        $x = $srcWidth / 2 - $cropWidth / 2;
+        $y = ($srcHeight - $cropHeight) / 6;
+
+        switch ($crop) {
+            case 'center':
+                $x = round(($srcWidth - $cropWidth) / 2);
+                $y = round(($srcHeight - $cropHeight) / 2);
+                break;
+            case 'top':
+                $y = 0;
+                break;
+            case 'bottom':
+                $y = $srcHeight - $cropHeight;
+                break;
+            case 'top-center':
+                $y = round(($srcHeight - $cropHeight) / 4);
+                break;
+            case 'bottom-center':
+                $y = $srcHeight - $cropHeight - round(($srcHeight - $cropHeight) / 4);
+                break;
+            case 'left':
+                $x = 0;
+                break;
+            case 'right':
+                $x = $srcWidth - $cropWidth;
+                break;
+        }
+
+        if ($destRatio > $srcRatio) {
+            return ['x' => 0, 'y' => $y, 'srcWidth' => $srcWidth, 'srcHeight' => $cropHeight, 'width' => $width, 'height' => $height];
+        }
+
+        return ['x' => $x, 'y' => 0, 'srcWidth' => $cropWidth, 'srcHeight' => $srcHeight, 'width' => $width, 'height' => $height];
+    }
+
+    private function runToWebp(ImageFile $source, ImageFile $target, int $quality): bool
+    {
+        if ($source->isSvg()) {
+            return false;
+        }
+
+        if (!function_exists('imagewebp')) {
+            $this->logError('The GD function imagewebp is not available, unable to convert the images to WebP.');
+
+            return false;
+        }
+
+        $type = wp_check_filetype($source->path());
+        $extension = str_replace('jpg', 'jpeg', strtolower((string) $type['ext']));
+        $create = 'imagecreatefrom' . $extension;
+        if ($extension === '' || !function_exists($create)) {
+            return false;
+        }
+
+        $image = @$create($source->path());
+        if (!$image instanceof \GdImage) {
+            $this->logError(sprintf('Unable to load the image %s.', $source->path()));
+
+            return false;
+        }
+
+        if (!imageistruecolor($image)) {
+            imagepalettetotruecolor($image);
+        }
+
+        return imagewebp($image, $target->path(), $quality);
+    }
+
+    private function logError(string $message): void
+    {
+        try {
+            Log::warning($message);
+        } catch (\Throwable) {
+        }
+    }
+}
