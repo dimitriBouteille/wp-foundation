@@ -85,6 +85,10 @@ See [Getting started](docs/getting-started.md) for the details.
 ## Documentation
 
 - [Getting started](docs/getting-started.md)
+- [Routing](docs/routing.md)
+- [Views](docs/views.md)
+- [Validation](docs/validation.md)
+- [Console](docs/console.md)
 
 ## Contributing
 
