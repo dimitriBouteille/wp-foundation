@@ -127,13 +127,11 @@ final class Router implements RouterInterface
      */
     public function getGenerator(): UrlGenerator
     {
-        if ($this->generator === null) {
-            $this->generator = new UrlGenerator(
-                routes: $this->routeCollection,
-                context: $this->requestContext,
-                customPaths: $this->customPaths,
-            );
-        }
+        $this->generator ??= new UrlGenerator(
+            routes: $this->routeCollection,
+            context: $this->requestContext,
+            customPaths: $this->customPaths,
+        );
 
         return $this->generator;
     }
@@ -168,7 +166,7 @@ final class Router implements RouterInterface
         $this->requestContext = $context;
         $this->getMatcher()->setContext($context);
 
-        if (isset($this->generator)) {
+        if ($this->generator instanceof UrlGenerator) {
             $this->getGenerator()->setContext($context);
         }
     }

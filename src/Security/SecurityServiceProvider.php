@@ -49,7 +49,7 @@ final readonly class SecurityServiceProvider
             $namespaces = $config->get('security.restApi.publicNamespaces', []);
             $capability = $config->get('security.restApi.capability');
             (new RestrictRestApi(
-                publicNamespaces: is_array($namespaces) ? array_filter($namespaces, 'is_string') : [],
+                publicNamespaces: is_array($namespaces) ? array_filter($namespaces, is_string(...)) : [],
                 capability: is_string($capability) ? $capability : 'manage_options',
             ))->register();
         }

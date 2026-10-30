@@ -294,7 +294,7 @@ final class Application extends Container
 
     protected function registerBaseBindings(): self
     {
-        static::setInstance($this);
+        self::setInstance($this);
 
         $this->instance('app', $this);
         $this->instance(self::class, $this);

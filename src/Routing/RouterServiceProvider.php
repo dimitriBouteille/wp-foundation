@@ -37,7 +37,7 @@ final readonly class RouterServiceProvider
             customPaths: $customPaths,
         );
 
-        $router->addNamespaces(array_filter($namespaces, 'is_string'));
+        $router->addNamespaces(array_filter($namespaces, is_string(...)));
         $router->boot();
         $this->app->instance('router', $router);
     }

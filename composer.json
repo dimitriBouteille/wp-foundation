@@ -40,10 +40,11 @@
         "twig/twig": "^2.16"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3.66",
-        "php-stubs/wordpress-stubs": "^6.9",
-        "php-stubs/wp-cli-stubs": "^2.11",
-        "phpstan/phpstan": "^2.1"
+        "friendsofphp/php-cs-fixer": "3.95.27",
+        "php-stubs/wordpress-stubs": "6.9.4",
+        "php-stubs/wp-cli-stubs": "2.12.0",
+        "phpstan/phpstan": "2.3.4",
+        "rector/rector": "2.8.3"
     },
     "autoload": {
         "psr-4": {
@@ -59,6 +60,8 @@
     "scripts": {
         "phpstan": "phpstan analyse --memory-limit=1G",
         "csFixer": "php-cs-fixer fix --dry-run --diff",
-        "csFixer:fix": "php-cs-fixer fix"
+        "csFixer:fix": "php-cs-fixer fix",
+        "rector": "rector process --dry-run",
+        "rector:fix": "rector process"
     }
 }

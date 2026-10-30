@@ -51,7 +51,7 @@ final class SpamProtection
         $timestamp = is_numeric($timestamp) ? (int) $timestamp : 0;
         $elapsed = time() - $timestamp;
 
-        return (bool) ($elapsed < self::MIN_SUBMIT_DELAY || $elapsed > self::MAX_SUBMIT_DELAY)
+        return $elapsed < self::MIN_SUBMIT_DELAY || $elapsed > self::MAX_SUBMIT_DELAY
         ;
     }
 }

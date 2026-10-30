@@ -11,7 +11,7 @@ class JsonResponse implements ResponseInterface
 {
     // Encode <, >, ', &, and " characters in the JSON, making it also safe to be embedded into HTML.
     // 15 === JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
-    final public const DEFAULT_ENCODING_OPTIONS = 15;
+    final public const int DEFAULT_ENCODING_OPTIONS = 15;
 
     /**
      * @param array<mixed> $data

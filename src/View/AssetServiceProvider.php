@@ -40,7 +40,7 @@ final readonly class AssetServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton('asset', function (Application $app) {
+        $this->app->singleton('asset', function (Application $app): AssetResolver {
             $areas = $app->getConfig()->get('asset.areas');
             $resolvers = [];
             foreach (is_array($areas) ? $areas : [] as $name => $resolver) {

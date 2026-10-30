@@ -50,10 +50,10 @@ final readonly class TwigServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton('twig', function () {
+        $this->app->singleton('twig', function (): Environment {
             $modules = $this->app->getConfig()->get('twig.modules', []);
             $viewLoader = new ViewLoader(
-                modules: is_array($modules) ? array_filter($modules, 'is_string') : [],
+                modules: is_array($modules) ? array_filter($modules, is_string(...)) : [],
                 cache: $this->app->isProduction() ? $this->app->getCache() : null,
             );
 

@@ -3,4 +3,5 @@
 /.github export-ignore
 /.php-cs-fixer.php export-ignore
 /phpstan.neon export-ignore
+/rector.php export-ignore
 /tests export-ignore

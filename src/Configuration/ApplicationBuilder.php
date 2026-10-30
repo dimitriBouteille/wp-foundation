@@ -136,11 +136,11 @@ final class ApplicationBuilder
 
     private function registerDefaultBindings(): void
     {
-        $this->app->singleton('dir', fn (Application $app) => new DirectoryList($app->getBasePath(), $this->directories));
-        $this->app->singleton('events', fn ($app) => new Dispatcher($app));
-        $this->app->singleton('log', fn ($app) => new LogManager($app));
+        $this->app->singleton('dir', fn (Application $app): DirectoryList => new DirectoryList($app->getBasePath(), $this->directories));
+        $this->app->singleton('events', fn ($app): Dispatcher => new Dispatcher($app));
+        $this->app->singleton('log', fn ($app): LogManager => new LogManager($app));
 
-        $this->app->singleton('cache', function (Container $app) {
+        $this->app->singleton('cache', function (Container $app): TagAwareAdapter {
             /** @var DirectoryList $dir */
             $dir = $app->get('dir');
 

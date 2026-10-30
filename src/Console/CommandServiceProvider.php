@@ -37,7 +37,7 @@ readonly class CommandServiceProvider
         }
 
         $finder = new ClassFinder();
-        foreach (array_filter($namespaces, 'is_string') as $namespace) {
+        foreach (array_filter($namespaces, is_string(...)) as $namespace) {
             foreach ($finder->find($namespace) as $class) {
                 $attribute = (new \ReflectionClass($class))->getAttributes(Command::class)[0] ?? null;
                 if ($attribute === null) {

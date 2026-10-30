@@ -12,7 +12,7 @@ use Psr\Cache\CacheItemPoolInterface;
 
 class ViewLoader
 {
-    private const CACHE_KEY = 'app_twig_module_paths';
+    private const string CACHE_KEY = 'app_twig_module_paths';
 
     /**
      * @param string[] $modules Glob patterns of the module directories.

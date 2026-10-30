@@ -20,7 +20,6 @@ class Required extends NotBlank
     /**
      * @param array<string, mixed>|null $options
      * @param string[]|null $groups
-     * @param null $payload
      */
     public function __construct(?string $label = null, ?string $message = null, ?array $options = null, ?bool $allowNull = null, ?callable $normalizer = null, ?array $groups = null, $payload = null)
     {

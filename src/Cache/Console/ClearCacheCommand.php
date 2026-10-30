@@ -16,14 +16,14 @@ use Dbout\WpFoundation\Console\Concerns\InteractsWithOutput;
  * Run the cache clearers tagged with {@see CacheClearerInterface::TAG}, then the {@see ClearCacheCommand::CLEARED_ACTION} action.
  */
 #[Command(name: 'app:cache:clear', description: 'Clear the application cache.')]
-final class ClearCacheCommand
+final readonly class ClearCacheCommand
 {
     use InteractsWithOutput;
 
     public const string CLEARED_ACTION = 'app_cache_cleared';
 
     public function __construct(
-        private readonly Application $app,
+        private Application $app,
     ) {}
 
     public function __invoke(): void
