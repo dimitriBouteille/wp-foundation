@@ -1,6 +1,6 @@
 # Views
 
-The views are rendered with [Twig](https://twig.symfony.com/doc/2.x/).
+The views are rendered with [Twig](https://twig.symfony.com/doc/3.x/).
 
 ## Templates
 

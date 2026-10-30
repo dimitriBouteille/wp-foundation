@@ -9,7 +9,7 @@ return [
     /**
      * List of extensions added to Twig.
      *
-     * @see https://twig.symfony.com/doc/2.x/advanced.html#creating-an-extension
+     * @see https://twig.symfony.com/doc/3.x/advanced.html#creating-an-extension
      */
     'extensions' => [
         Dbout\WpFoundation\View\Twig\Extensions\AssetExtension::class,
