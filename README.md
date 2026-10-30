@@ -50,6 +50,22 @@ Requires PHP 8.3+.
 composer require dbout/wp-foundation
 ```
 
+## Documentation
+
+The documentation is in the [docs](docs/README.md) directory:
+
+- [Getting started](docs/getting-started.md)
+- [Configuration reference](docs/configuration.md)
+- [Routing](docs/routing.md)
+- [Views](docs/views.md)
+- [Validation](docs/validation.md)
+- [Console](docs/console.md)
+- [Cache](docs/cache.md)
+- [Images](docs/images.md)
+- [Logging](docs/logging.md)
+- [Security](docs/security.md)
+- [Troubleshooting](docs/troubleshooting.md)
+
 ## Quick start
 
 Create the application in a mu-plugin:
@@ -102,22 +118,6 @@ final class Hello
 ```
 
 See [Getting started](docs/getting-started.md) for the details.
-
-## Documentation
-
-The documentation is in the [docs](docs/README.md) directory:
-
-- [Getting started](docs/getting-started.md)
-- [Configuration reference](docs/configuration.md)
-- [Routing](docs/routing.md)
-- [Views](docs/views.md)
-- [Validation](docs/validation.md)
-- [Console](docs/console.md)
-- [Cache](docs/cache.md)
-- [Images](docs/images.md)
-- [Logging](docs/logging.md)
-- [Security](docs/security.md)
-- [Troubleshooting](docs/troubleshooting.md)
 
 ## Contributing
 
