@@ -1,6 +1,6 @@
 # Logging
 
-The logs are written with the [Laravel logger](https://laravel.com/docs/10.x/logging) (Monolog).
+The logs are written with the [Laravel logger](https://laravel.com/docs/12.x/logging) (Monolog).
 
 ```php
 use Dbout\WpFoundation\Facades\Log;
@@ -37,7 +37,7 @@ return [
 Log::channel('payment')->info('Payment received.', ['order' => $orderId]);
 ```
 
-See the [Laravel documentation](https://laravel.com/docs/10.x/logging#available-channel-drivers) for the available drivers (`single`, `daily`, `stack`, `slack`, `syslog`, ...). The default channel is changed with the `default` option.
+See the [Laravel documentation](https://laravel.com/docs/12.x/logging#available-channel-drivers) for the available drivers (`single`, `daily`, `stack`, `slack`, `syslog`, ...). The default channel is changed with the `default` option.
 
 ## Logs of the package
 

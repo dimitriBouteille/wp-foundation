@@ -6,11 +6,3 @@ parameters:
     bootstrapFiles:
         - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
         - vendor/php-stubs/wp-cli-stubs/wp-cli-stubs.php
-    ignoreErrors:
-        # Container::make() returns mixed with Illuminate 10, an object with Illuminate 11+
-        -
-            message: '#Call to function is_object\(\) with object will always evaluate to true#'
-            paths:
-                - src/Application.php
-                - src/Console/CommandServiceProvider.php
-            reportUnmatched: false

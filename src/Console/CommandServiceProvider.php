@@ -44,13 +44,8 @@ readonly class CommandServiceProvider
                     continue;
                 }
 
-                $instance = $this->app->make($class);
-                if (!is_object($instance)) {
-                    throw new \LogicException(sprintf('The command %s cannot be built.', $class));
-                }
-
                 $command = $attribute->newInstance();
-                \WP_CLI::add_command($command->name, $instance, array_filter([
+                \WP_CLI::add_command($command->name, $this->app->make($class), array_filter([
                     'shortdesc' => $command->description,
                 ]));
             }

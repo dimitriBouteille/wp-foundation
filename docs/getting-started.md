@@ -136,7 +136,7 @@ app()->isEnvironment('staging');
 
 ## Container
 
-The application is an [Illuminate container](https://laravel.com/docs/10.x/container): the services are bound in the service providers, then resolved anywhere with the `app()` helper.
+The application is an [Illuminate container](https://laravel.com/docs/12.x/container): the services are bound in the service providers, then resolved anywhere with the `app()` helper.
 
 ```php
 // In the register() method of a service provider
@@ -162,7 +162,7 @@ foreach (app()->tagged('app.clearers') as $clearer) {
 }
 ```
 
-See the [Laravel documentation](https://laravel.com/docs/10.x/container) for the other features (contextual binding, extenders, ...).
+See the [Laravel documentation](https://laravel.com/docs/12.x/container) for the other features (contextual binding, extenders, ...).
 
 ## Service providers
 

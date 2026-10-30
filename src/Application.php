@@ -284,7 +284,7 @@ final class Application extends Container
     {
         foreach ($bootstrappers as $bootstrapper) {
             $instance = $this->make($bootstrapper);
-            if (!is_object($instance) || !method_exists($instance, 'bootstrap')) {
+            if (!method_exists($instance, 'bootstrap')) {
                 throw new \LogicException(sprintf('The bootstrapper %s must define a bootstrap() method.', $bootstrapper));
             }
 
