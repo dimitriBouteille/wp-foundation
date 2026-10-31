@@ -7,8 +7,8 @@ The default configuration of the package is in the [config](../config) directory
 | Option | Default | Description |
 |---|---|---|
 | `env` | `wp_get_environment_type()` | Environment of the application, the caches are enabled in `production` |
-| `locale` | `determine_locale()` | Locale of the dates (Carbon) |
-| `date.translations` | `[]` | [Carbon translations](https://carbon.nesbot.com/docs/#api-localization) replacing the default ones of the locale |
+| `locale` | `determine_locale()` | Locale of the dates (Carbon), set when the application is created then again on `init` (once WPML / Polylang and the user are loaded), and following `switch_to_locale()` |
+| `date.translations` | `[]` | [Carbon translations](https://carbon.nesbot.com/docs/#api-localization) replacing the default ones of the `locale` (not of a locale switched to) |
 
 ## asset.php
 

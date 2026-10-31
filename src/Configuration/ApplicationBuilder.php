@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Dbout\WpFoundation\Configuration;
 
-use Carbon\Carbon;
 use Dbout\WpFoundation\Application;
 use Dbout\WpFoundation\Bootstrap\LoadConfiguration;
 use Dbout\WpFoundation\Cache\Adapter\TagAwareAdapter;
@@ -20,6 +19,7 @@ use Dbout\WpFoundation\Filesystem\DirectoryList;
 use Dbout\WpFoundation\Image\ImageServiceProvider;
 use Dbout\WpFoundation\Routing\RouterServiceProvider;
 use Dbout\WpFoundation\Security\SecurityServiceProvider;
+use Dbout\WpFoundation\Translation\DateServiceProvider;
 use Dbout\WpFoundation\Translation\TranslationServiceProvider;
 use Dbout\WpFoundation\View\AssetServiceProvider;
 use Dbout\WpFoundation\View\TwigServiceProvider;
@@ -33,6 +33,7 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 final class ApplicationBuilder
 {
     private const array DEFAULT_PROVIDERS = [
+        DateServiceProvider::class,
         RouterServiceProvider::class,
         CommandServiceProvider::class,
         TwigServiceProvider::class,
@@ -113,7 +114,6 @@ final class ApplicationBuilder
     {
         $this->registerDefaultBindings();
         $this->app->bootstrapWith(self::DEFAULT_BOOTSTRAPPERS);
-        $this->configureDate();
         $this->registerProviders();
         $this->app->boot();
 
@@ -157,20 +157,5 @@ final class ApplicationBuilder
 
         $this->app->bind(PoolCacheClearer::class, fn (Application $app): PoolCacheClearer => new PoolCacheClearer($app->getCache()));
         $this->app->tag(PoolCacheClearer::class, CacheClearerInterface::TAG);
-    }
-
-    private function configureDate(): void
-    {
-        $config = $this->app->getConfig();
-        $locale = $config->get('app.locale');
-        if (is_string($locale)) {
-            Carbon::setLocale($locale);
-        }
-
-        $translations = $config->get('app.date.translations', []);
-        if (is_array($translations) && $translations !== []) {
-            // @phpstan-ignore-next-line
-            Carbon::getTranslator()->setTranslations($translations);
-        }
     }
 }
