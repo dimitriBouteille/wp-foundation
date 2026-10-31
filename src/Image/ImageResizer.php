@@ -197,11 +197,11 @@ final class ImageResizer
         $srcHeight = $current['height'];
         $srcRatio = $srcWidth / $srcHeight;
         if ($height === 0) {
-            $height = round($width / $srcRatio);
+            $height = max(1, (int) round($width / $srcRatio));
         }
 
         if ($width === 0) {
-            $width = round($height * $srcRatio);
+            $width = max(1, (int) round($height * $srcRatio));
         }
 
         if ($crop === false) {

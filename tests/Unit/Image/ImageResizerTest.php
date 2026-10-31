@@ -12,6 +12,7 @@ use Dbout\WpFoundation\Image\GeneratedImagesCleaner;
 use Dbout\WpFoundation\Image\ImageResizer;
 use Dbout\WpFoundation\Image\ImageServiceProvider;
 use Dbout\WpFoundation\Tests\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresFunction;
 
 final class ImageResizerTest extends TestCase
@@ -53,6 +54,35 @@ final class ImageResizerTest extends TestCase
 
         self::assertSame('https://example.com/uploads/photo-300x200-c-default.jpg', $resizer->resize('https://example.com/uploads/photo.jpg', 300, 200, 'unknown'));
         self::assertSame('https://example.com/uploads/photo-300x0-c-f.jpg', $resizer->resize('https://example.com/uploads/photo.jpg', 300, null, false));
+    }
+
+    /**
+     * @return iterable<string, array{int, int, int, int, array{int, int, int, int, int, int}}>
+     */
+    public static function tinySizeProvider(): iterable
+    {
+        yield 'height rounded to 0' => [3000, 500, 2, 0, [1000, 0, 1000, 500, 2, 1]];
+        yield 'width rounded to 0' => [500, 3000, 0, 2, [0, 333, 500, 1000, 1, 2]];
+    }
+
+    /**
+     * @param array{int, int, int, int, int, int} $crop
+     */
+    #[DataProvider('tinySizeProvider')]
+    public function testComputesASizeOfAtLeastOnePixel(int $sourceWidth, int $sourceHeight, int $width, int $height, array $crop): void
+    {
+        touch($this->uploads . '/photo.jpg');
+        $editor = \Mockery::mock();
+        $editor->shouldReceive('get_size')->andReturn(['width' => $sourceWidth, 'height' => $sourceHeight]);
+        $editor->shouldReceive('crop')->once()->with(...$crop);
+        $editor->shouldReceive('set_quality');
+        $editor->shouldReceive('save')->once()->andReturn([]);
+        Functions\when('wp_get_image_editor')->justReturn($editor);
+        Functions\when('is_wp_error')->justReturn(false);
+
+        $url = (new ImageResizer())->resize('https://example.com/uploads/photo.jpg', $width, $height);
+
+        self::assertSame(sprintf('https://example.com/uploads/photo-%dx%d-c-default.jpg', $width, $height), $url);
     }
 
     #[RequiresFunction('imagewebp')]
