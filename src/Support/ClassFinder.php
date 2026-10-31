@@ -14,6 +14,9 @@ use Composer\Autoload\ClassLoader;
  * from the Composer autoloaders and the class names are derived from the file paths.
  *
  * The namespace can contain `*` wildcards (e.g. `App\*\Controller\`), the matching directories are found with `glob()`.
+ *
+ * A file is only autoloaded when it declares the expected class (read with the PHP tokenizer, without running it):
+ * the other PHP files of the directories (functions, templates, config arrays) are never included.
  */
 class ClassFinder
 {
@@ -49,7 +52,11 @@ class ClassFinder
         $classes = [];
         ksort($directories);
         foreach ($directories as $directory => $directoryNamespace) {
-            foreach ($this->findClasses($directoryNamespace, $directory) as $class) {
+            foreach ($this->findClasses($directoryNamespace, $directory) as $class => $file) {
+                if (!$this->declaresClass($file, $class)) {
+                    continue;
+                }
+
                 if (class_exists($class) && !(new \ReflectionClass($class))->isAbstract()) {
                     $classes[] = $class;
                 }
@@ -100,7 +107,7 @@ class ClassFinder
     }
 
     /**
-     * @return string[]
+     * @return array<string, string> The path of each class file, indexed by the class name derived from the path
      */
     protected function findClasses(string $namespace, string $directory): array
     {
@@ -115,11 +122,47 @@ class ClassFinder
             }
 
             $relative = substr($file->getPathname(), strlen($directory) + 1, -4);
-            $classes[] = $namespace . str_replace(DIRECTORY_SEPARATOR, '\\', $relative);
+            $classes[$namespace . str_replace(DIRECTORY_SEPARATOR, '\\', $relative)] = $file->getPathname();
         }
 
-        sort($classes);
+        ksort($classes);
 
         return $classes;
+    }
+
+    /**
+     * Whether the file declares the class (`class`, not an interface, a trait or an enum), without including it.
+     */
+    protected function declaresClass(string $file, string $class): bool
+    {
+        $code = file_get_contents($file);
+        if ($code === false) {
+            return false;
+        }
+
+        $tokens = array_values(array_filter(
+            \PhpToken::tokenize($code),
+            fn (\PhpToken $token): bool => !$token->isIgnorable(),
+        ));
+
+        $namespace = '';
+        foreach ($tokens as $index => $token) {
+            if ($token->is(T_NAMESPACE) && ($tokens[$index + 1] ?? null)?->is([T_NAME_QUALIFIED, T_STRING])) {
+                $namespace = $tokens[$index + 1]->text . '\\';
+                continue;
+            }
+
+            // `Foo::class` and `new class` are not declarations
+            if (!$token->is(T_CLASS) || ($tokens[$index - 1] ?? null)?->is([T_DOUBLE_COLON, T_NEW])) {
+                continue;
+            }
+
+            $name = $tokens[$index + 1] ?? null;
+            if ($name?->is(T_STRING) && strcasecmp($namespace . $name->text, $class) === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
