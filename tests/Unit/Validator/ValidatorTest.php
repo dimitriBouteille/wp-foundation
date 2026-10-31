@@ -108,6 +108,16 @@ final class ValidatorTest extends TestCase
         self::assertSame('John', $form->name);
     }
 
+    public function testIgnoresTheFieldsThatCannotBeHydrated(): void
+    {
+        $form = new ContactForm();
+
+        (new Validator())->validate($form, Request::create('/contact?0=x&name[]=x&email=john@example.com'));
+        (new Validator())->validate($form, ['John', 'Doe']);
+
+        self::assertSame('john@example.com', $form->email);
+    }
+
     public function testTheSourceMustBeIterable(): void
     {
         $this->expectExceptionMessage('The source parameter must be iterable');

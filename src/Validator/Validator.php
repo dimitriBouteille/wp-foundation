@@ -82,6 +82,11 @@ class Validator
 
         $accessor = $this->createPropertyAccess();
         foreach ($source as $key => $data) {
+            // A numeric key (`?0=x`, a JSON list) is not a property, and PropertyAccessor requires a string path
+            if (!is_string($key)) {
+                continue;
+            }
+
             try {
                 $accessor->setValue($value, $key, $data);
             } catch (\Exception) {
