@@ -6,6 +6,7 @@
 - Check that the file follows PSR-4: the class name is derived from the file path, a class named differently from its file is ignored.
 - The trailing slash is ignored: `/account/register/` matches the `/account/register` route, and `/account/register` matches the `/account/register/` route.
 - The routes are not matched under WP-CLI.
+- In production, the routes of `router.namespaces` are cached: run `wp app:cache:clear` after adding or changing a controller.
 - A route only matches its `methods`: a `POST` on a `GET` route is handled by WordPress (404).
 - The routes are matched on `init`: a plugin redirecting earlier (e.g. on `plugins_loaded`) takes precedence.
 

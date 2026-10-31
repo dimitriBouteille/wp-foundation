@@ -17,6 +17,7 @@ final readonly class RouterServiceProvider
 
     /**
      * Load the controllers once all the providers are registered, so that they can add their own `router.namespaces`.
+     * In production, the routes are cached (cleared with `wp app:cache:clear`).
      *
      * @throws \Throwable
      */
@@ -37,7 +38,10 @@ final readonly class RouterServiceProvider
             customPaths: $customPaths,
         );
 
-        $router->addNamespaces(array_filter($namespaces, is_string(...)));
+        $router->addNamespaces(
+            array_filter($namespaces, is_string(...)),
+            $this->app->isProduction() ? $this->app->getCache() : null,
+        );
         $router->boot();
         $this->app->instance('router', $router);
     }

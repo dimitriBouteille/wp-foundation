@@ -15,6 +15,7 @@ use Dbout\WpFoundation\Tests\TestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -125,6 +126,41 @@ final class RouterTest extends TestCase
         self::assertSame('https://example.com/blog/cart', $router->generate('cart', [], UrlGeneratorInterface::ABSOLUTE_URL));
     }
 
+    public function testCachesTheRoutesOfTheNamespaces(): void
+    {
+        $cache = new ArrayAdapter();
+        $namespaces = ['Dbout\\WpFoundation\\Tests\\Fixtures\\Modules\\*\\Controller\\'];
+        $expected = $this->createRouter('/')->getRouteCollection();
+        $this->createRouter('/', namespaces: [])->addNamespaces($namespaces, $cache);
+
+        $router = $this->createRouter('/blog/42', namespaces: []);
+        $router->addNamespaces($namespaces, $cache);
+
+        self::assertCount(1, $cache->getValues());
+        self::assertEquals($expected, $router->getRouteCollection());
+        $route = $router->getRouteCollection()->get('blog_show');
+        self::assertInstanceOf(Route::class, $route);
+        self::assertSame('blog_show', $route->name);
+
+        $router->matchCurrentRoute();
+        self::assertSame(42, RecordedResponse::$sent[0]->data['id'] ?? null);
+    }
+
+    public function testReadsTheRoutesFromTheCacheWithoutScanningTheControllers(): void
+    {
+        $cache = new ArrayAdapter();
+        $namespaces = ['Dbout\\WpFoundation\\Tests\\Fixtures\\Modules\\*\\Controller\\'];
+        $cache->save($cache->getItem('app_routes_' . hash('xxh128', serialize($namespaces)))->set([
+            ['name' => 'cached', 'path' => '/cached', 'defaults' => ['_controller' => 'strtoupper'], 'requirements' => [], 'methods' => ['GET']],
+        ]));
+
+        $router = $this->createRouter('/', namespaces: []);
+        $router->addNamespaces($namespaces, $cache);
+
+        self::assertSame(['cached'], array_keys($router->getRouteCollection()->all()));
+        self::assertSame(['GET'], $router->getRouteCollection()->get('cached')?->getMethods());
+    }
+
     public function testMatchesTheRoutesOnInit(): void
     {
         $router = $this->createRouter('/');
@@ -210,8 +246,9 @@ final class RouterTest extends TestCase
 
     /**
      * @param array<string, mixed> $customPaths
+     * @param string[]|null $namespaces
      */
-    private function createRouter(string $uri, string $method = 'GET', array $customPaths = []): Router
+    private function createRouter(string $uri, string $method = 'GET', array $customPaths = [], ?array $namespaces = null): Router
     {
         $_SERVER['REQUEST_URI'] = $uri;
         $_SERVER['REQUEST_METHOD'] = $method;
@@ -219,7 +256,7 @@ final class RouterTest extends TestCase
         parse_str($_SERVER['QUERY_STRING'], $_GET);
 
         $router = new Router(new Container(), $customPaths);
-        $router->addNamespaces(['Dbout\\WpFoundation\\Tests\\Fixtures\\Modules\\*\\Controller\\']);
+        $router->addNamespaces($namespaces ?? ['Dbout\\WpFoundation\\Tests\\Fixtures\\Modules\\*\\Controller\\']);
 
         return $router;
     }

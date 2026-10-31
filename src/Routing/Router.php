@@ -10,6 +10,8 @@ namespace Dbout\WpFoundation\Routing;
 use Dbout\WpFoundation\Routing\Generator\UrlGenerator;
 use Dbout\WpFoundation\Routing\Loader\NamespaceLoader;
 use Illuminate\Contracts\Container\Container;
+use Psr\Cache\CacheItemInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
@@ -21,6 +23,8 @@ use Symfony\Component\Routing\RouterInterface;
 
 final class Router implements RouterInterface
 {
+    private const string CACHE_KEY = 'app_routes';
+
     protected UrlMatcher $urlMatcher;
 
     protected RequestContext $requestContext;
@@ -80,17 +84,19 @@ final class Router implements RouterInterface
     /**
      * Add the routes of the controllers of the given PSR-4 namespaces (e.g. `App\Controller\`).
      *
+     * Finding the controllers scans the directories and reads the attributes of every class: with a cache pool
+     * (in production), the routes are cached by namespaces config, a new controller is found once the cache is cleared
+     * (`wp app:cache:clear`).
+     *
      * @param string[] $namespaces
      * @throws \Exception
+     * @throws \Psr\Cache\InvalidArgumentException
      * @return $this
      */
-    public function addNamespaces(array $namespaces): self
+    public function addNamespaces(array $namespaces, ?CacheItemPoolInterface $cache = null): self
     {
-        $loader = new NamespaceLoader();
-        foreach ($namespaces as $namespace) {
-            foreach ($loader->load($namespace) as $route) {
-                $this->add($route);
-            }
+        foreach ($this->loadNamespaces($namespaces, $cache) as $route) {
+            $this->add($route);
         }
 
         return $this;
@@ -201,6 +207,50 @@ final class Router implements RouterInterface
         unset($config['_controller']);
         $executor = new RouteExecutor($this->container, $controller, $config, $this->request);
         $executor->execute();
+    }
+
+    /**
+     * @param string[] $namespaces
+     * @throws \Exception
+     * @throws \Psr\Cache\InvalidArgumentException
+     * @return Route[]
+     */
+    private function loadNamespaces(array $namespaces, ?CacheItemPoolInterface $cache): array
+    {
+        $item = $cache?->getItem(self::CACHE_KEY . '_' . hash('xxh128', serialize($namespaces)));
+        $cached = $item?->isHit() === true ? $item->get() : null;
+        if (is_array($cached)) {
+            /** @var array<array{name: string, path: string, defaults: array<string, mixed>, requirements: array<string, string>, methods: string[]}> $cached */
+            return array_map(fn (array $route): Route => new Route(
+                name: $route['name'],
+                path: $route['path'],
+                defaults: $route['defaults'],
+                requirements: $route['requirements'],
+                methods: $route['methods'],
+            ), $cached);
+        }
+
+        $loader = new NamespaceLoader();
+        $routes = [];
+        foreach ($namespaces as $namespace) {
+            foreach ($loader->load($namespace) as $route) {
+                $routes[] = $route;
+            }
+        }
+
+        if ($cache instanceof CacheItemPoolInterface && $item instanceof CacheItemInterface) {
+            // Plain arrays: a serialized Route would lose its name (Symfony Route serializes its own properties only)
+            $item->set(array_map(fn (Route $route): array => [
+                'name' => $route->name,
+                'path' => $route->getPath(),
+                'defaults' => $route->getDefaults(),
+                'requirements' => $route->getRequirements(),
+                'methods' => $route->getMethods(),
+            ], $routes));
+            $cache->save($item);
+        }
+
+        return $routes;
     }
 
     /**
