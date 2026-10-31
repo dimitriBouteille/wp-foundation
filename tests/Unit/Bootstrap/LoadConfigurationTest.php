@@ -48,6 +48,8 @@ final class LoadConfigurationTest extends TestCase
         ], $config->get('security.restApi'));
         self::assertSame(['Dbout\\WpFoundation\\Tests\\Fixtures\\Modules\\*\\Controller\\'], $config->get('router.namespaces'));
         self::assertArrayHasKey('home', (array) $config->get('router.customPaths'));
+        self::assertSame([self::fixturePath('templates')], $config->get('twig.paths'));
+        self::assertSame(['strict_variables' => false], $config->get('twig.options'));
     }
 
     public function testLoadsTheProjectFilesWithoutDefaultConfiguration(): void

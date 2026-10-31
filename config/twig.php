@@ -22,4 +22,16 @@ return [
      * (camelCase name of the module directory). A later module overrides the templates of an earlier one with the same namespace.
      */
     'modules' => [],
+
+    /**
+     * Directories of the templates without namespace (e.g. the `templates` directory of the theme).
+     */
+    'paths' => [],
+
+    /**
+     * Options of the Twig environment, replacing the default ones (e.g. `autoescape`, `strict_variables`).
+     *
+     * @see https://twig.symfony.com/doc/3.x/api.html#environment-options
+     */
+    'options' => [],
 ];

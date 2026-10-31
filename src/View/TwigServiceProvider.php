@@ -33,6 +33,8 @@ use Twig\Loader\FilesystemLoader;
  * Configuration:
  * - `twig.extensions`: Array of Twig extension class names to register.
  * - `twig.modules`: Glob patterns of the module directories, a later module overrides the templates of an earlier one sharing its namespace.
+ * - `twig.paths`: Directories of the templates without namespace.
+ * - `twig.options`: Options of the Twig environment, replacing the default ones.
  *
  * @see ViewLoader For template path discovery logic.
  */
@@ -58,17 +60,23 @@ final readonly class TwigServiceProvider
             );
 
             $loader = new FilesystemLoader();
+            $paths = $this->app->getConfig()->get('twig.paths', []);
+            foreach (is_array($paths) ? array_filter($paths, is_string(...)) : [] as $path) {
+                $loader->addPath($path);
+            }
+
             foreach ($viewLoader->loadPathsWithNamespaces() as [$namespace, $path]) {
                 if (is_dir($path)) {
                     $loader->prependPath($path, $namespace);
                 }
             }
 
-            $twig = new Environment($loader, [
+            $options = $this->app->getConfig()->get('twig.options', []);
+            $twig = new Environment($loader, array_merge([
                 'strict_variables' => true,
                 'debug' => !$this->app->isProduction(),
                 'cache' => $this->app->isProduction() ? $this->getCachePath() : false,
-            ]);
+            ], is_array($options) ? $options : []));
 
             $this->loadExtensions($twig);
 

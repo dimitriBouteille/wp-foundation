@@ -57,3 +57,5 @@ See [Security](security.md) for the effect of each option.
 |---|---|---|
 | `extensions` (merged) | `AssetExtension`, `ImageExtension`, `WordPressExtension` | Twig extensions, see [Views](views.md#extensions) |
 | `modules` (merged) | `[]` | Glob patterns of the modules whose `views` directory is a Twig namespace, see [Views](views.md#templates) |
+| `paths` (merged) | `[]` | Directories of the templates without namespace, see [Views](views.md#templates-without-namespace) |
+| `options` (merged) | `[]` | [Options of the Twig environment](https://twig.symfony.com/doc/3.x/api.html#environment-options), replacing the default ones (`strict_variables`, `debug`, `cache`), see [Views](views.md#environment-options) |

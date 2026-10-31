@@ -23,6 +23,25 @@ app/Modules/
 
 The `modules` are glob patterns. When two modules have the same name, the templates of the last one override the ones of the first one.
 
+### Templates without namespace
+
+The directories of `paths` contain templates rendered without namespace, e.g. the templates of the theme:
+
+```php
+// config/twig.php
+return [
+    'paths' => [
+        get_template_directory() . '/templates',
+    ],
+];
+```
+
+```php
+echo Twig::render('pages/home.twig');
+```
+
+When a template exists in several directories, the first directory wins.
+
 ## Render a template
 
 From a controller, return a `ViewResponse` (see [Routing](routing.md)):
@@ -40,6 +59,35 @@ echo Twig::render('@account/register.twig', ['user' => $user]);
 ```
 
 The Twig environment uses `strict_variables`: an undefined variable throws an error. Outside production, the `debug` mode is enabled and the templates are not cached. In production, they are compiled in `var/cache/twig`.
+
+### Environment options
+
+The [options of the environment](https://twig.symfony.com/doc/3.x/api.html#environment-options) are changed with `options`, e.g. to allow the undefined variables or to escape only some templates:
+
+```php
+// config/twig.php
+return [
+    'options' => [
+        'strict_variables' => false,
+        'autoescape' => [App\Twig\EscapingStrategy::class, 'guess'],
+    ],
+];
+```
+
+```php
+namespace App\Twig;
+
+final class EscapingStrategy
+{
+    public static function guess(string $name): string|false
+    {
+        return str_starts_with($name, '@') ? 'html' : false;
+    }
+}
+```
+
+> [!WARNING]
+> Disabling the autoescape exposes the site to XSS: the variables must then be escaped in the templates (`{{ value|e }}`).
 
 ### Replace the renderer
 

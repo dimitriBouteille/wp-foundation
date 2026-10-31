@@ -121,7 +121,7 @@ final class LoadConfiguration
             'asset' => ['areas'],
             'logging' => ['channels'],
             'router' => ['namespaces', 'customPaths'],
-            'twig' => ['extensions', 'modules'],
+            'twig' => ['extensions', 'modules', 'paths', 'options'],
             'console' => ['namespaces'],
             'security' => ['headers', 'restApi'],
         ][$name] ?? [];
