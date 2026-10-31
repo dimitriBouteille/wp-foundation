@@ -1,0 +1,6 @@
+{
+    "index.html": {
+        "file": "assets/index-abc123.js",
+        "css": ["assets/index-def456.css"]
+    }
+}

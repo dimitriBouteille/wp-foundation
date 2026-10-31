@@ -1,0 +1,4 @@
+{
+    "app.js": "/static/app.123.js",
+    "nested": {"file": "ignored"}
+}

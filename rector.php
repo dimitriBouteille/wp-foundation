@@ -12,6 +12,7 @@ return RectorConfig::configure()
     ->withPaths([
         __DIR__ . '/src',
         __DIR__ . '/config',
+        __DIR__ . '/tests',
     ])
     ->withPreparedSets(
         deadCode: true,
@@ -23,4 +24,5 @@ return RectorConfig::configure()
     ->withSkip([
         // The WordPress hooks of the package must stay removable with remove_action() / remove_filter()
         ArrayToFirstClassCallableRector::class,
+        __DIR__ . '/tests/Fixtures',
     ]);

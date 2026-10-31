@@ -40,11 +40,16 @@
         "twig/twig": "^3.27"
     },
     "require-dev": {
+        "antecedent/patchwork": "2.2.4",
+        "brain/monkey": "2.7.0",
         "friendsofphp/php-cs-fixer": "3.95.27",
+        "mockery/mockery": "1.6.15",
         "php-stubs/wordpress-stubs": "6.9.4",
         "php-stubs/wp-cli-stubs": "2.12.0",
         "phpstan/phpstan": "2.3.4",
-        "rector/rector": "2.8.3"
+        "phpunit/phpunit": "12.5.42",
+        "rector/rector": "2.8.3",
+        "roots/wordpress": "7.1.4"
     },
     "suggest": {
         "ext-gd": "Required by the towebp Twig filter (with the WebP support)",
@@ -58,14 +63,27 @@
             "src/helpers.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Dbout\\WpFoundation\\Tests\\": "tests/"
+        }
+    },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "roots/wordpress-core-installer": true
+        }
     },
     "scripts": {
         "phpstan": "phpstan analyse --memory-limit=1G",
         "csFixer": "php-cs-fixer fix --dry-run --diff",
         "csFixer:fix": "php-cs-fixer fix",
         "rector": "rector process --dry-run",
-        "rector:fix": "rector process"
+        "rector:fix": "rector process",
+        "test": "phpunit",
+        "test:coverage": "phpunit --coverage-text"
+    },
+    "extra": {
+        "wordpress-install-dir": "vendor/wordpress"
     }
 }

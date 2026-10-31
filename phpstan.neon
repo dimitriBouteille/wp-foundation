@@ -3,6 +3,10 @@ parameters:
     paths:
         - src
         - config
+        - tests
+    excludePaths:
+        - tests/Stubs
+        - tests/bootstrap.php
     bootstrapFiles:
         - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
         - vendor/php-stubs/wp-cli-stubs/wp-cli-stubs.php

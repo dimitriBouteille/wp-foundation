@@ -7,6 +7,7 @@
 3. Make the desired changes to the code.
     * If you are adding a new feature or changing a behavior, update the [documentation](docs/README.md).
     * If you are changing the messages of the validation, update the translations (see below).
+    * Add or update the tests (see below).
 4. Run the checks (see below).
 5. Push the changes to your fork.
 6. Create a pull request to the `dbout/wp-foundation` repository.
@@ -36,9 +37,21 @@ The pull requests must pass the same checks as the CI:
 composer csFixer   # code style (PER-CS 2.0), fix it with: composer csFixer:fix
 composer rector    # refactoring, apply it with: composer rector:fix
 composer phpstan   # static analysis (level 9)
+composer test      # unit tests
 ```
 
 The dev dependencies are pinned to fixed versions (the `composer.lock` file is not committed): update them in `composer.json` in a dedicated pull request.
+
+## Tests
+
+The unit tests are in `tests/Unit`, with the same structure as `src`. They run without WordPress: the WordPress functions and hooks are mocked with [Brain Monkey](https://github.com/Brain-WP/BrainMonkey), and the WP-CLI calls are recorded by `Tests\Doubles\Cli`.
+
+```bash
+composer test
+vendor/bin/phpunit --filter RouterTest
+```
+
+The classes, configuration files, templates and manifests used by the tests are in `tests/Fixtures`.
 
 ## Translations
 

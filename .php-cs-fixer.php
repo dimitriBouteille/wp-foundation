@@ -9,6 +9,7 @@ $finder = PhpCsFixer\Finder::create()
     ->in([
         'src',
         'config',
+        'tests',
     ])
 ;
 
