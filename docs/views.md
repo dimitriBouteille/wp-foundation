@@ -123,7 +123,13 @@ They are added to the default extensions of the package.
 | `page_title('Title')` | Replaces the title of the document, must be called before `wp_head()` |
 | `theme_url('images/logo.svg')` | URL of a file of the theme |
 | `admin_url('admin.php')` | The WordPress function |
-| `content\|wpautop` | The WordPress function |
+| `text\|wpautop` | The WordPress function, the text is escaped first: `content\|raw\|wpautop` for a trusted HTML content |
+
+The values returned by `function()`, `theme_url()` and `admin_url()` are escaped like any value, `function()` can return a value of the visitor (e.g. `get_search_query`). Add `|raw` to print the HTML returned by a trusted function:
+
+```twig
+{{ function('get_the_post_thumbnail', post.id, 'large')|raw }}
+```
 
 The `site` global contains the information of the site:
 

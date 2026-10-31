@@ -109,11 +109,35 @@ final class ExtensionsTest extends TestCase
         );
     }
 
-    private function render(ExtensionInterface $extension, string $template): string
+    public function testTheValuesOfTheFunctionsAreEscaped(): void
+    {
+        Functions\when('admin_url')->alias(fn (string $path = ''): string => 'https://example.com/wp-admin/' . $path);
+        Functions\when('get_template_directory_uri')->justReturn('https://example.com/theme"/');
+
+        self::assertSame(
+            '&lt;script&gt;alert(1)&lt;/script&gt;|<b>trusted</b>|https://example.com/wp-admin/edit.php?a=1&amp;b=&lt;x&gt;|https://example.com/theme&quot;/logo.svg',
+            $this->render(new WordPressExtension(), '{{ function("trim", "<script>alert(1)</script>") }}|{{ function("trim", "<b>trusted</b>")|raw }}|{{ admin_url("edit.php?a=1&b=<x>") }}|{{ theme_url("logo.svg") }}'),
+        );
+    }
+
+    public function testTheWpautopFilterEscapesItsInput(): void
+    {
+        Functions\when('wpautop')->alias(fn (string $text): string => '<p>' . $text . '</p>');
+
+        self::assertSame(
+            '<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>|<p><b>trusted</b></p>',
+            $this->render(new WordPressExtension(), '{{ search|wpautop }}|{{ content|raw|wpautop }}', ['search' => '<script>alert(1)</script>', 'content' => '<b>trusted</b>']),
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function render(ExtensionInterface $extension, string $template, array $context = []): string
     {
         $twig = new Environment(new ArrayLoader(['template' => $template]), ['strict_variables' => true]);
         $twig->addExtension($extension);
 
-        return $twig->render('template');
+        return $twig->render('template', $context);
     }
 }

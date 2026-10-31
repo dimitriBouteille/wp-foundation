@@ -20,19 +20,21 @@ use Twig\TwigFunction;
 final class WordPressExtension extends AbstractExtension implements GlobalsInterface
 {
     /**
+     * The values returned by the functions are escaped like any value: `function()` can return a value of the visitor
+     * (`get_search_query`, a post meta, ...). Add `|raw` to print the HTML of a trusted function
+     * (`{{ function('get_the_post_thumbnail')|raw }}`).
+     *
      * @inheritDoc
      */
     public function getFunctions(): array
     {
-        $config = ['is_safe' => ['html']];
-
         return [
-            new TwigFunction('theme_url', [Theme::class, 'url'], $config),
-            new TwigFunction('admin_url', 'admin_url', $config),
-            new TwigFunction('wp_head', 'wp_head', $config),
-            new TwigFunction('wp_footer', 'wp_footer', $config),
+            new TwigFunction('theme_url', [Theme::class, 'url']),
+            new TwigFunction('admin_url', 'admin_url'),
+            new TwigFunction('wp_head', 'wp_head', ['is_safe' => ['html']]),
+            new TwigFunction('wp_footer', 'wp_footer', ['is_safe' => ['html']]),
             new TwigFunction('action', [$this, 'doAction']),
-            new TwigFunction('function', [$this, 'callFunction'], $config),
+            new TwigFunction('function', [$this, 'callFunction']),
             new TwigFunction('page_title', [$this, 'setPageTitle']),
         ];
     }
@@ -48,12 +50,15 @@ final class WordPressExtension extends AbstractExtension implements GlobalsInter
     }
 
     /**
+     * `wpautop` escapes its input (like the `nl2br` filter of Twig), then adds the paragraphs: `{{ text|wpautop }}`
+     * is safe with a value of the visitor. Add `|raw` before it for a trusted HTML content (`{{ post.content|raw|wpautop }}`).
+     *
      * @inheritDoc
      */
     public function getFilters(): array
     {
         return [
-            new TwigFilter('wpautop', 'wpautop', ['is_safe' => ['html']]),
+            new TwigFilter('wpautop', 'wpautop', ['pre_escape' => 'html', 'is_safe' => ['html']]),
         ];
     }
 
