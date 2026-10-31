@@ -26,8 +26,27 @@ final class ViewLoaderTest extends TestCase
     public function testCachesThePaths(): void
     {
         $cache = new ArrayAdapter();
-        $paths = (new ViewLoader([self::fixturePath('Modules') . '/*'], $cache))->loadPathsWithNamespaces();
+        $modules = [self::fixturePath('Modules') . '/*'];
+        $paths = (new ViewLoader($modules, $cache))->loadPathsWithNamespaces();
 
-        self::assertSame($paths, (new ViewLoader([], $cache))->loadPathsWithNamespaces());
+        $loader = new class ($modules, $cache) extends ViewLoader {
+            protected function findPaths(): array
+            {
+                throw new \LogicException('The paths must be read from the cache.');
+            }
+        };
+
+        self::assertSame($paths, $loader->loadPathsWithNamespaces());
+    }
+
+    public function testTheCacheDependsOnTheModules(): void
+    {
+        $cache = new ArrayAdapter();
+        (new ViewLoader([self::fixturePath('Modules') . '/*'], $cache))->loadPathsWithNamespaces();
+
+        self::assertSame(
+            [['blog', self::fixturePath('Modules/Blog/views')]],
+            (new ViewLoader([self::fixturePath('Modules') . '/Blog'], $cache))->loadPathsWithNamespaces(),
+        );
     }
 }
