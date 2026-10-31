@@ -12,8 +12,8 @@ use Dbout\WpFoundation\Facades\Log;
 /**
  * Generates resized and WebP versions of the images, next to the source file.
  *
- * The generated files are named like the ones of Timber (`photo-800x600-c-center.jpg`, `photo-800x600-c-center.webp`),
- * so that the files already generated are reused. A file is generated again when its source is more recent.
+ * The generated files are named `photo-800x600-c-center.jpg` and `photo-800x600-c-center.webp`,
+ * the files already generated are reused. A file is generated again when its source is more recent.
  * On error, the source URL is returned.
  */
 final class ImageResizer
@@ -185,7 +185,7 @@ final class ImageResizer
     }
 
     /**
-     * Same computation as Timber, so that the regenerated files are identical.
+     * Area of the source image to crop and size of the generated image.
      *
      * @param array{width: int, height: int} $current
      * @return array{x: int|float, y: int|float, srcWidth: int|float, srcHeight: int|float, width: int|float, height: int|float}

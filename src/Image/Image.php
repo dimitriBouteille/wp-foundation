@@ -10,8 +10,7 @@ namespace Dbout\WpFoundation\Image;
 /**
  * Attachment of the media library.
  *
- * Same accessors as Timber\Image for the ones used by the templates (`image.src`, `image.src('large')`, `image.alt`),
- * so that the templates do not change when migrating.
+ * Used by the templates as `image.src`, `image.src('large')` or `image.alt`.
  */
 class Image implements \Stringable
 {
