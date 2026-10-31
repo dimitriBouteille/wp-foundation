@@ -16,8 +16,9 @@ final readonly class RouterServiceProvider
     ) {}
 
     /**
-     * Load the controllers once all the providers are registered, so that they can add their own `router.namespaces`.
-     * In production, the routes are cached (cleared with `wp app:cache:clear`).
+     * Add the namespaces once all the providers are registered, so that they can add their own `router.namespaces`.
+     * The controllers are discovered on `init` (once the plugins are loaded), in production the routes are cached
+     * (cleared with `wp app:cache:clear`).
      *
      * @throws \Throwable
      */

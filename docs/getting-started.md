@@ -48,7 +48,7 @@ mu-plugin                       Application::configure()->create()
  └─ boot the providers           boot() of each provider: the WordPress hooks are added
 
 init (priority 0)               the translations of the package are loaded
-init (priority 10)              the router matches the URL
+init (priority 10)              the controllers are discovered (cached in production), the router matches the URL
  ├─ no route                     WordPress handles the request as usual
  └─ route                        the controller is executed
      ├─ RedirectResponse, JsonResponse, Response, ErrorResponse   sent immediately (the script stops)

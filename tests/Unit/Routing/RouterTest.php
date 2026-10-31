@@ -126,12 +126,33 @@ final class RouterTest extends TestCase
         self::assertSame('https://example.com/blog/cart', $router->generate('cart', [], UrlGeneratorInterface::ABSOLUTE_URL));
     }
 
+    public function testDiscoversTheControllersOnTheFirstUseOfTheRoutes(): void
+    {
+        $router = $this->createRouter('/blog', namespaces: []);
+
+        // The namespace is not resolved when it is added (before the plugins are loaded), but when the routes are used
+        $router->addNamespaces(['App\\Missing\\']);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('No directory found for the namespace "App\\Missing\\"');
+
+        $router->matchCurrentRoute();
+    }
+
+    public function testLoadsTheNamespacesBeforeGeneratingAnUrl(): void
+    {
+        $router = $this->createRouter('/', namespaces: []);
+        $router->addNamespaces(['Dbout\\WpFoundation\\Tests\\Fixtures\\Modules\\*\\Controller\\']);
+
+        self::assertSame('/blog/42', $router->generate('blog_show', ['id' => 42]));
+    }
+
     public function testCachesTheRoutesOfTheNamespaces(): void
     {
         $cache = new ArrayAdapter();
         $namespaces = ['Dbout\\WpFoundation\\Tests\\Fixtures\\Modules\\*\\Controller\\'];
         $expected = $this->createRouter('/')->getRouteCollection();
-        $this->createRouter('/', namespaces: [])->addNamespaces($namespaces, $cache);
+        $this->createRouter('/', namespaces: [])->addNamespaces($namespaces, $cache)->getRouteCollection();
 
         $router = $this->createRouter('/blog/42', namespaces: []);
         $router->addNamespaces($namespaces, $cache);

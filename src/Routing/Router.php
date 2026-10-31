@@ -36,6 +36,13 @@ final class Router implements RouterInterface
     protected ?UrlGenerator $generator = null;
 
     /**
+     * Namespaces added with {@see addNamespaces()}, loaded on the first use of the routes.
+     *
+     * @var array<array{string[], CacheItemPoolInterface|null}>
+     */
+    private array $pendingNamespaces = [];
+
+    /**
      * @param Container $container          Used to resolve and call the controllers
      * @param array<string, mixed> $customPaths
      */
@@ -84,20 +91,20 @@ final class Router implements RouterInterface
     /**
      * Add the routes of the controllers of the given PSR-4 namespaces (e.g. `App\Controller\`).
      *
+     * The controllers are discovered on the first use of the routes (matching on `init`, URL generation), not when
+     * the namespaces are added: the application is created by a mu-plugin, before the plugins are loaded, and loading
+     * a controller extending a class of a plugin (e.g. WooCommerce) would fail.
+     *
      * Finding the controllers scans the directories and reads the attributes of every class: with a cache pool
      * (in production), the routes are cached by namespaces config, a new controller is found once the cache is cleared
      * (`wp app:cache:clear`).
      *
      * @param string[] $namespaces
-     * @throws \Exception
-     * @throws \Psr\Cache\InvalidArgumentException
      * @return $this
      */
     public function addNamespaces(array $namespaces, ?CacheItemPoolInterface $cache = null): self
     {
-        foreach ($this->loadNamespaces($namespaces, $cache) as $route) {
-            $this->add($route);
-        }
+        $this->pendingNamespaces[] = [$namespaces, $cache];
 
         return $this;
     }
@@ -137,9 +144,13 @@ final class Router implements RouterInterface
 
     /**
      * Gets the UrlGenerator instance associated with this Router.
+     *
+     * @throws \Exception
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function getGenerator(): UrlGenerator
     {
+        $this->loadPendingNamespaces();
         $this->generator ??= new UrlGenerator(
             routes: $this->routeCollection,
             context: $this->requestContext,
@@ -151,9 +162,13 @@ final class Router implements RouterInterface
 
     /**
      * @inheritDoc
+     * @throws \Exception
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function getRouteCollection(): RouteCollection
     {
+        $this->loadPendingNamespaces();
+
         return $this->routeCollection;
     }
 
@@ -166,8 +181,14 @@ final class Router implements RouterInterface
         return $this->getGenerator()->generate($name, $parameters, $referenceType);
     }
 
+    /**
+     * @throws \Exception
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     public function getMatcher(): UrlMatcher
     {
+        $this->loadPendingNamespaces();
+
         return $this->urlMatcher;
     }
 
@@ -177,11 +198,8 @@ final class Router implements RouterInterface
     public function setContext(RequestContext $context): void
     {
         $this->requestContext = $context;
-        $this->getMatcher()->setContext($context);
-
-        if ($this->generator instanceof UrlGenerator) {
-            $this->getGenerator()->setContext($context);
-        }
+        $this->urlMatcher->setContext($context);
+        $this->generator?->setContext($context);
     }
 
     /**
@@ -207,6 +225,21 @@ final class Router implements RouterInterface
         unset($config['_controller']);
         $executor = new RouteExecutor($this->container, $controller, $config, $this->request);
         $executor->execute();
+    }
+
+    /**
+     * @throws \Exception
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
+    private function loadPendingNamespaces(): void
+    {
+        $pending = $this->pendingNamespaces;
+        $this->pendingNamespaces = [];
+        foreach ($pending as [$namespaces, $cache]) {
+            foreach ($this->loadNamespaces($namespaces, $cache) as $route) {
+                $this->add($route);
+            }
+        }
     }
 
     /**
