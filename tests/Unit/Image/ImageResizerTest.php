@@ -64,25 +64,51 @@ final class ImageResizerTest extends TestCase
 
         $url = (new ImageResizer())->toWebp('https://example.com/uploads/photo.png');
 
-        self::assertSame('https://example.com/uploads/photo.webp', $url);
-        self::assertSame('image/webp', mime_content_type($this->uploads . '/photo.webp'));
+        self::assertSame('https://example.com/uploads/photo.png.webp', $url);
+        self::assertSame('image/webp', mime_content_type($this->uploads . '/photo.png.webp'));
+    }
+
+    public function testDoesNotReuseTheWebpImageOfAnotherAttachment(): void
+    {
+        touch($this->uploads . '/photo.jpg', time() - 60);
+        touch($this->uploads . '/photo.webp');
+        touch($this->uploads . '/photo.jpg.webp');
+        Functions\expect('wp_check_filetype')->never();
+
+        $resizer = new ImageResizer();
+
+        self::assertSame('https://example.com/uploads/photo.jpg.webp', $resizer->toWebp('https://example.com/uploads/photo.jpg'));
+        self::assertSame('https://example.com/uploads/photo.webp', $resizer->toWebp('https://example.com/uploads/photo.webp'));
     }
 
     public function testDeletesTheGeneratedFiles(): void
     {
-        $files = ['photo.jpg', 'photo.webp', 'photo-300x200-c-default.jpg', 'photo-300x200-c-top-center.webp', 'photo-large.jpg', 'photo-150x150.jpg', 'photo-150x150.webp', 'other-300x200-c-default.jpg'];
+        $files = ['photo.jpg', 'photo.jpg.webp', 'photo-300x200-c-default.jpg', 'photo-300x200-c-top-center.jpg.webp', 'photo-300x0-c-f.jpg', 'photo-large.jpg', 'photo-150x150.jpg', 'photo-150x150.jpg.webp', 'photo-2-300x200-c-default.jpg', 'other-300x200-c-default.jpg'];
         foreach ($files as $file) {
             touch($this->uploads . '/' . $file);
         }
 
         (new ImageResizer())->deleteGeneratedFiles($this->uploads . '/photo.jpg', [$this->uploads . '/photo-150x150.jpg']);
 
-        self::assertSame(['other-300x200-c-default.jpg', 'photo-150x150.jpg', 'photo-large.jpg', 'photo.jpg'], $this->listFiles());
+        self::assertSame(['other-300x200-c-default.jpg', 'photo-150x150.jpg', 'photo-2-300x200-c-default.jpg', 'photo-large.jpg', 'photo.jpg'], $this->listFiles());
+    }
+
+    public function testKeepsTheFilesOfAWebpAttachmentWithTheSameName(): void
+    {
+        // photo.webp is another attachment, uploaded in the same directory as photo.jpg, with its own sizes and resized versions
+        $webpAttachment = ['photo.webp', 'photo-150x150.webp', 'photo-300x200-c-default.webp'];
+        foreach (['photo.jpg', 'photo-150x150.jpg', 'photo.jpg.webp', 'photo-300x200-c-default.jpg', 'photo-300x200-c-default.jpg.webp', ...$webpAttachment] as $file) {
+            touch($this->uploads . '/' . $file);
+        }
+
+        (new ImageResizer())->deleteGeneratedFiles($this->uploads . '/photo.jpg', [$this->uploads . '/photo-150x150.jpg']);
+
+        self::assertSame(['photo-150x150.jpg', 'photo-150x150.webp', 'photo-300x200-c-default.webp', 'photo.jpg', 'photo.webp'], $this->listFiles());
     }
 
     public function testTheCleanerDeletesTheGeneratedFilesOfTheAttachment(): void
     {
-        foreach (['photo.jpg', 'photo-300x200-c-default.jpg', 'photo-150x150.webp', 'photo-scaled.webp'] as $file) {
+        foreach (['photo.jpg', 'photo-300x200-c-default.jpg', 'photo-150x150.jpg.webp', 'photo-scaled.jpg.webp'] as $file) {
             touch($this->uploads . '/' . $file);
         }
 
