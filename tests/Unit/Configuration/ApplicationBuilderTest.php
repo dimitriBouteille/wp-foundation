@@ -12,6 +12,7 @@ use Carbon\AbstractTranslator;
 use Carbon\Carbon;
 use Dbout\WpFoundation\Application;
 use Dbout\WpFoundation\Cache\Adapter\TagAwareAdapter;
+use Dbout\WpFoundation\Facades\Log;
 use Dbout\WpFoundation\Filesystem\Directory;
 use Dbout\WpFoundation\Routing\Router;
 use Dbout\WpFoundation\Tests\Fixtures\Providers\RecordingProvider;
@@ -87,6 +88,19 @@ final class ApplicationBuilderTest extends TestCase
             ->create();
 
         self::assertInstanceOf(RecordingProvider::class, $app->getProvider(RecordingProvider::class));
+    }
+
+    public function testWritesTheLogs(): void
+    {
+        $logs = $this->createTemporaryDirectory();
+        $app = Application::configure($this->createTemporaryDirectory())->withDirectory(Directory::Log, $logs)->create();
+
+        Log::info('Order synchronized.', ['order' => 12]);
+
+        $files = glob($logs . '/app-*.log') ?: [];
+        self::assertCount(1, $files);
+        self::assertStringContainsString('app.INFO: Order synchronized. {"order":12}', (string) file_get_contents($files[0]));
+        self::assertSame($app->getBasePath() . '/var/logs', $app->storagePath('logs'));
     }
 
     public function testAppliesTheDateTranslations(): void

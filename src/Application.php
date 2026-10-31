@@ -73,6 +73,16 @@ final class Application extends Container
     }
 
     /**
+     * Called by the Illuminate components (e.g. the emergency logger of {@see \Illuminate\Log\LogManager}), the storage is the `var` directory.
+     *
+     * @throws Throwable
+     */
+    public function storagePath(string $path = ''): string
+    {
+        return $this->getDir()->getPath(Directory::Var, $path);
+    }
+
+    /**
      * Create the application and return its builder, the application is ready once {@see ApplicationBuilder::create()} is called.
      *
      * @param string $basePath Absolute path of the project root

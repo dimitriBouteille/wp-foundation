@@ -24,7 +24,9 @@ use Dbout\WpFoundation\Translation\TranslationServiceProvider;
 use Dbout\WpFoundation\View\AssetServiceProvider;
 use Dbout\WpFoundation\View\TwigServiceProvider;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Log\ContextLogProcessor as ContextLogProcessorContract;
 use Illuminate\Events\Dispatcher;
+use Illuminate\Log\Context\ContextLogProcessor;
 use Illuminate\Log\LogManager;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
@@ -139,6 +141,9 @@ final class ApplicationBuilder
         $this->app->singleton('dir', fn (Application $app): DirectoryList => new DirectoryList($app->getBasePath(), $this->directories));
         $this->app->singleton('events', fn ($app): Dispatcher => new Dispatcher($app));
         $this->app->singleton('log', fn ($app): LogManager => new LogManager($app));
+
+        // The log manager uses the context processor, bound by the ContextServiceProvider in Laravel
+        $this->app->bind(ContextLogProcessorContract::class, fn (): ContextLogProcessor => new ContextLogProcessor());
 
         $this->app->singleton('cache', function (Container $app): TagAwareAdapter {
             /** @var DirectoryList $dir */
