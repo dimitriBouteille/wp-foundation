@@ -128,5 +128,6 @@ final class ResponseTest extends TestCase
         (new ViewResponse('404.twig', status: 404))->send();
 
         self::assertFalse(has_action('parse_query'));
+        self::assertSame(10, has_filter('do_redirect_guess_404_permalink', '__return_false'));
     }
 }

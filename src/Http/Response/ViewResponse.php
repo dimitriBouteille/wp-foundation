@@ -17,8 +17,9 @@ use Dbout\WpFoundation\View\ViewRendererInterface;
  * is done and all the redirections (canonical, WooCommerce, ...) have been processed.
  *
  * Controller URLs do not match any WordPress content, so WordPress flags the main query as a 404:
- * the flag and the HTTP status are overridden, otherwise `redirect_canonical()` would try to
- * redirect the URL to a "guessed" post and the page would be sent with a 404 status.
+ * the flag and the HTTP status are overridden, otherwise the page would be sent with a 404 status.
+ * The guess redirection of `redirect_canonical()` is disabled, also with a 404 status (where the flag is kept),
+ * otherwise the URL could be redirected to a "guessed" post before the template is rendered.
  */
 class ViewResponse implements ResponseInterface
 {
@@ -38,6 +39,7 @@ class ViewResponse implements ResponseInterface
      */
     public function send(): mixed
     {
+        add_filter('do_redirect_guess_404_permalink', '__return_false');
         add_filter('status_header', function (string $header, int $code, string $description, string $protocol): string {
             if ($code !== 404) {
                 return $header;
