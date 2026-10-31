@@ -111,7 +111,7 @@ The files of the project are merged with the default configuration of the packag
 | `logging.php` | `channels` |
 | `router.php` | `namespaces`, `customPaths` |
 | `security.php` | `headers`, `restApi` |
-| `twig.php` | `extensions`, `modules` |
+| `twig.php` | `extensions`, `modules`, `paths`, `options` |
 
 A closure is resolved when the option is read, so that WordPress functions can be used in the configuration:
 
