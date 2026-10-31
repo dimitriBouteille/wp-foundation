@@ -88,6 +88,16 @@ final class RouteExecutorTest extends TestCase
         $this->execute(fn () => throw $exception, []);
     }
 
+    public function testAnExceptionOfTheLoggerDoesNotReplaceTheExceptionOfTheController(): void
+    {
+        $exception = new \DomainException('Unexpected error.');
+        Log::shouldReceive('error')->once()->andThrow(new \UnexpectedValueException('The stream or file could not be opened.'));
+
+        $this->expectExceptionObject($exception);
+
+        $this->execute(fn () => throw $exception, []);
+    }
+
     public function testTheActionMustReturnAResponse(): void
     {
         $this->expectException(\UnexpectedValueException::class);

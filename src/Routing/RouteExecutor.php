@@ -25,7 +25,8 @@ use Symfony\Component\HttpFoundation\Request;
  *  - the route parameters are passed by name, cast to the scalar type of the parameter.
  *
  * The action must return a {@see ResponseInterface}, which is sent. HTTP exceptions are
- * converted into responses, other exceptions are logged and thrown again.
+ * converted into responses, other exceptions are logged and thrown again (a failure of the logger is ignored,
+ * so that it does not replace the exception of the controller).
  */
 class RouteExecutor
 {
@@ -50,10 +51,7 @@ class RouteExecutor
         } catch (HttpException $exception) {
             $response = $this->handleHttpException($exception);
         } catch (\Throwable $exception) {
-            Log::error($exception->getMessage(), [
-                'exception' => $exception,
-                'controller' => $this->controller,
-            ]);
+            $this->logException($exception);
 
             throw $exception;
         }
@@ -141,6 +139,21 @@ class RouteExecutor
             'bool' => filter_var($value, FILTER_VALIDATE_BOOLEAN),
             default => $value,
         };
+    }
+
+    /**
+     * Logs the exception of the controller. An exception of the logger (e.g. a log directory that is not writable)
+     * is ignored: the exception of the controller is the one to throw.
+     */
+    protected function logException(\Throwable $exception): void
+    {
+        try {
+            Log::error($exception->getMessage(), [
+                'exception' => $exception,
+                'controller' => $this->controller,
+            ]);
+        } catch (\Throwable) {
+        }
     }
 
     protected function handleHttpException(HttpException $exception): ResponseInterface
