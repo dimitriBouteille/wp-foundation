@@ -94,6 +94,19 @@ final class ProtectionsTest extends TestCase
         self::assertSame(1, has_action('template_redirect', [$protection, 'blockAuthorRequests']));
         self::assertSame(10, has_filter('author_link', 'function ()'));
         self::assertSame(10, has_filter('rest_endpoints', [$protection, 'hideUserEndpoints']));
+        self::assertSame(10, has_filter('oembed_response_data', [$protection, 'hideOEmbedAuthor']));
+    }
+
+    public function testPreventUserEnumerationReplacesTheAuthorOfTheOEmbedData(): void
+    {
+        Functions\when('get_bloginfo')->justReturn('Example');
+        Functions\when('get_home_url')->justReturn('https://example.com');
+        $data = ['version' => '1.0', 'title' => 'Hello world', 'author_name' => 'admin', 'author_url' => 'https://example.com/author/admin/'];
+
+        self::assertSame(
+            ['version' => '1.0', 'title' => 'Hello world', 'author_name' => 'Example', 'author_url' => 'https://example.com'],
+            (new PreventUserEnumeration())->hideOEmbedAuthor($data),
+        );
     }
 
     public function testPreventUserEnumerationHidesTheUsersRoutesOfTheRestApiToTheVisitors(): void

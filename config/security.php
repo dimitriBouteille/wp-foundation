@@ -26,7 +26,7 @@ return [
     'hideVersion' => false,
 
     /**
-     * Return a 404 on the author archives and the `?author=` requests, and hide the REST users routes to the visitors.
+     * Return a 404 on the author archives and the `?author=` requests, hide the REST users routes to the visitors and the author of the oEmbed data.
      */
     'preventUserEnumeration' => false,
 
