@@ -55,6 +55,7 @@ $url = $resizer->toWebp($resizer->resize($image->src(), 800, 600));
 - The files are generated once, then reused: a file is generated again when the source is more recent, or with `force`.
 - The files are named `photo-800x600-c-center.jpg`, and `photo.jpg.webp` or `photo-800x600-c-center.jpg.webp` for the WebP versions: they keep the extension of their source, so they never collide with a WebP image uploaded with the same name (`photo.webp`).
 - `towebp` returns a WebP image as is.
+- The `image_editor_output_format` filter is applied, like for the sizes of the media library: with `['image/jpeg' => 'image/webp']`, `resize` generates `photo-800x600-c-center.jpg.webp`.
 - The source URL is returned as is for the SVG files and the files outside `wp-content`. When the file cannot be generated, the source URL is returned and a warning is logged.
 - The JPEG quality uses the `wp_editor_set_quality` filter (82 by default).
 

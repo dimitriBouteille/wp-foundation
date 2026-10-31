@@ -12,9 +12,9 @@ use Dbout\WpFoundation\Facades\Log;
 /**
  * Generates resized and WebP versions of the images, next to the source file.
  *
- * The generated files are named `photo-800x600-c-center.jpg` and `photo-800x600-c-center.jpg.webp`: the WebP versions
- * keep the extension of their source, so they never collide with a WebP image uploaded with the same name
- * (`photo.webp` next to `photo.jpg`). The files already generated are reused, a file is generated again
+ * The generated files are named `photo-800x600-c-center.jpg` and `photo-800x600-c-center.jpg.webp`: the WebP versions,
+ * and the images converted by the `image_editor_output_format` filter, keep the extension of their source, so they never
+ * collide with an image uploaded with the same name (`photo.webp` next to `photo.jpg`). The files already generated are reused, a file is generated again
  * when its source is more recent.
  * On error, the source URL is returned.
  */
@@ -52,10 +52,11 @@ final class ImageResizer
             return $src;
         }
 
-        $target = $source->withBasename(
-            sprintf('%s-%dx%d-c-%s', $source->filename, $width, $height, $crop === false ? 'f' : $crop),
-            $source->extension,
-        );
+        $basename = sprintf('%s-%dx%d-c-%s', $source->filename, $width, $height, $crop === false ? 'f' : $crop);
+        $outputExtension = $this->getOutputExtension($source);
+        $target = $outputExtension === $source->extension
+            ? $source->withBasename($basename, $source->extension)
+            : $source->withBasename($basename . '.' . $source->extension, $outputExtension);
 
         return $this->generate($src, $source, $target, $force, fn (): bool => $this->runResize($source, $target, $width, $height, $crop));
     }
@@ -99,7 +100,7 @@ final class ImageResizer
         }
 
         $pattern = sprintf(
-            '#^%s-\d+x\d+-c-[a-z-]+\.%s(\.webp)?$#',
+            '#^%s-\d+x\d+-c-[a-z-]+\.%s(\.[a-z0-9]+)?$#',
             preg_quote($info['filename'], '#'),
             preg_quote($extension, '#'),
         );
@@ -182,7 +183,44 @@ final class ImageResizer
             return false;
         }
 
+        // WordPress may still change the format (e.g. a chained `image_editor_output_format` mapping): the URL would be a 404
+        if ($result['path'] !== $target->path()) {
+            $this->logError(sprintf('Unable to resize the image %s: the editor saved %s instead of %s.', $source->path(), $result['path'], $target->path()));
+
+            return false;
+        }
+
         return true;
+    }
+
+    /**
+     * Extension of the resized image: the one of the source, or the one of the format it is converted to by the
+     * `image_editor_output_format` filter (e.g. JPEG to WebP), like WordPress does for the sizes of the media library.
+     * A converted image keeps the extension of its source (`photo-800x600-c-default.jpg.webp`), like the WebP versions.
+     */
+    private function getOutputExtension(ImageFile $source): string
+    {
+        // Before WordPress 5.8, the images are not converted (no `image_editor_output_format` filter)
+        if (!function_exists('wp_get_default_extension_for_mime_type')) {
+            return $source->extension;
+        }
+
+        $mimeType = wp_check_filetype($source->basename())['type'];
+        if (!is_string($mimeType) || $mimeType === '') {
+            return $source->extension;
+        }
+
+        $formats = function_exists('wp_get_image_editor_output_format')
+            ? wp_get_image_editor_output_format($source->path(), $mimeType)
+            : apply_filters('image_editor_output_format', [], $source->path(), $mimeType);
+        $outputMimeType = is_array($formats) ? ($formats[$mimeType] ?? null) : null;
+        if (!is_string($outputMimeType) || $outputMimeType === $mimeType || !wp_image_editor_supports(['mime_type' => $outputMimeType])) {
+            return $source->extension;
+        }
+
+        $extension = wp_get_default_extension_for_mime_type($outputMimeType);
+
+        return is_string($extension) && $extension !== '' ? $extension : $source->extension;
     }
 
     /**

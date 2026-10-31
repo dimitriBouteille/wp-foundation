@@ -12,6 +12,7 @@ use Dbout\WpFoundation\Image\GeneratedImagesCleaner;
 use Dbout\WpFoundation\Image\ImageResizer;
 use Dbout\WpFoundation\Image\ImageServiceProvider;
 use Dbout\WpFoundation\Tests\TestCase;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresFunction;
 
@@ -29,6 +30,15 @@ final class ImageResizerTest extends TestCase
         Functions\when('home_url')->justReturn('https://example.com');
         Functions\when('network_home_url')->justReturn('https://example.com');
         Functions\when('untrailingslashit')->alias(fn (string $value): string => rtrim($value, '/\\'));
+        Functions\when('wp_check_filetype')->alias(fn (string $file): array => match (strtolower(pathinfo($file, PATHINFO_EXTENSION))) {
+            'jpg' => ['ext' => 'jpg', 'type' => 'image/jpeg'],
+            'png' => ['ext' => 'png', 'type' => 'image/png'],
+            'webp' => ['ext' => 'webp', 'type' => 'image/webp'],
+            default => ['ext' => false, 'type' => false],
+        });
+        Functions\when('wp_get_image_editor_output_format')->justReturn([]);
+        Functions\when('wp_image_editor_supports')->justReturn(true);
+        Functions\when('wp_get_default_extension_for_mime_type')->alias(fn (string $mime): string => ['image/jpeg' => 'jpg', 'image/webp' => 'webp', 'image/avif' => 'avif'][$mime] ?? '');
     }
 
     public function testReturnsTheSourceWhenTheImageCannotBeResized(): void
@@ -76,13 +86,55 @@ final class ImageResizerTest extends TestCase
         $editor->shouldReceive('get_size')->andReturn(['width' => $sourceWidth, 'height' => $sourceHeight]);
         $editor->shouldReceive('crop')->once()->with(...$crop);
         $editor->shouldReceive('set_quality');
-        $editor->shouldReceive('save')->once()->andReturn([]);
+        $editor->shouldReceive('save')->once()->andReturnUsing(fn (string $path): array => ['path' => $path]);
         Functions\when('wp_get_image_editor')->justReturn($editor);
         Functions\when('is_wp_error')->justReturn(false);
 
         $url = (new ImageResizer())->resize('https://example.com/uploads/photo.jpg', $width, $height);
 
         self::assertSame(sprintf('https://example.com/uploads/photo-%dx%d-c-default.jpg', $width, $height), $url);
+    }
+
+    public function testNamesTheResizedImageAfterTheOutputFormat(): void
+    {
+        // e.g. add_filter('image_editor_output_format', fn () => ['image/jpeg' => 'image/webp'])
+        touch($this->uploads . '/photo.jpg');
+        Functions\when('wp_get_image_editor_output_format')->justReturn(['image/jpeg' => 'image/webp']);
+        $target = $this->uploads . '/photo-300x200-c-default.jpg.webp';
+        $editor = $this->mockEditor();
+        $editor->shouldReceive('save')->once()->with($target)->andReturnUsing(function (string $path): array {
+            touch($path);
+
+            return ['path' => $path, 'file' => basename($path), 'mime-type' => 'image/webp'];
+        });
+
+        $resizer = new ImageResizer();
+        $generated = $resizer->resize('https://example.com/uploads/photo.jpg', 300, 200);
+        // Generated once: the file of the URL exists, the editor is not called again
+        $reused = $resizer->resize('https://example.com/uploads/photo.jpg', 300, 200);
+
+        self::assertSame('https://example.com/uploads/photo-300x200-c-default.jpg.webp', $generated);
+        self::assertSame($generated, $reused);
+    }
+
+    public function testKeepsTheExtensionWhenTheOutputFormatIsNotSupported(): void
+    {
+        touch($this->uploads . '/photo.jpg');
+        Functions\when('wp_get_image_editor_output_format')->justReturn(['image/jpeg' => 'image/avif']);
+        Functions\when('wp_image_editor_supports')->justReturn(false);
+        $editor = $this->mockEditor();
+        $editor->shouldReceive('save')->once()->with($this->uploads . '/photo-300x200-c-default.jpg')->andReturnUsing(fn (string $path): array => ['path' => $path]);
+
+        self::assertSame('https://example.com/uploads/photo-300x200-c-default.jpg', (new ImageResizer())->resize('https://example.com/uploads/photo.jpg', 300, 200));
+    }
+
+    public function testReturnsTheSourceWhenTheEditorSavesAnotherFile(): void
+    {
+        touch($this->uploads . '/photo.jpg');
+        $editor = $this->mockEditor();
+        $editor->shouldReceive('save')->once()->andReturn(['path' => $this->uploads . '/photo-300x200-c-default.avif']);
+
+        self::assertSame('https://example.com/uploads/photo.jpg', (new ImageResizer())->resize('https://example.com/uploads/photo.jpg', 300, 200));
     }
 
     #[RequiresFunction('imagewebp')]
@@ -113,7 +165,7 @@ final class ImageResizerTest extends TestCase
 
     public function testDeletesTheGeneratedFiles(): void
     {
-        $files = ['photo.jpg', 'photo.jpg.webp', 'photo-300x200-c-default.jpg', 'photo-300x200-c-top-center.jpg.webp', 'photo-300x0-c-f.jpg', 'photo-large.jpg', 'photo-150x150.jpg', 'photo-150x150.jpg.webp', 'photo-2-300x200-c-default.jpg', 'other-300x200-c-default.jpg'];
+        $files = ['photo.jpg', 'photo.jpg.webp', 'photo-300x200-c-default.jpg', 'photo-300x200-c-top-center.jpg.webp', 'photo-300x0-c-f.jpg', 'photo-300x200-c-default.jpg.avif', 'photo-large.jpg', 'photo-150x150.jpg', 'photo-150x150.jpg.webp', 'photo-2-300x200-c-default.jpg', 'other-300x200-c-default.jpg'];
         foreach ($files as $file) {
             touch($this->uploads . '/' . $file);
         }
@@ -170,6 +222,18 @@ final class ImageResizerTest extends TestCase
 
         self::assertNotFalse(has_action('delete_attachment', 'Dbout\WpFoundation\Image\GeneratedImagesCleaner->onDelete()'));
         self::assertNotFalse(has_filter('wp_generate_attachment_metadata', 'Dbout\WpFoundation\Image\GeneratedImagesCleaner->onRegenerate()'));
+    }
+
+    private function mockEditor(): MockInterface
+    {
+        $editor = \Mockery::mock();
+        $editor->shouldReceive('get_size')->andReturn(['width' => 600, 'height' => 400]);
+        $editor->shouldReceive('crop');
+        $editor->shouldReceive('set_quality');
+        Functions\when('wp_get_image_editor')->justReturn($editor);
+        Functions\when('is_wp_error')->justReturn(false);
+
+        return $editor;
     }
 
     /**
