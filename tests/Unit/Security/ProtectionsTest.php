@@ -71,6 +71,8 @@ final class ProtectionsTest extends TestCase
         } finally {
             unset($_GET['author']);
         }
+
+        self::assertSame(10, has_filter('redirect_canonical', '__return_false'));
     }
 
     public function testPreventUserEnumerationIgnoresTheOtherRequests(): void
@@ -79,6 +81,8 @@ final class ProtectionsTest extends TestCase
         Functions\expect('status_header')->never();
 
         (new PreventUserEnumeration())->blockAuthorRequests();
+
+        self::assertFalse(has_filter('redirect_canonical', '__return_false'));
     }
 
     public function testPreventUserEnumerationReplacesTheAuthorLinks(): void
@@ -87,7 +91,7 @@ final class ProtectionsTest extends TestCase
         $protection = new PreventUserEnumeration();
         $protection->register();
 
-        self::assertSame(10, has_action('template_redirect', [$protection, 'blockAuthorRequests']));
+        self::assertSame(1, has_action('template_redirect', [$protection, 'blockAuthorRequests']));
         self::assertSame(10, has_filter('author_link', 'function ()'));
     }
 
