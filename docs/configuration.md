@@ -27,7 +27,7 @@ The default configuration of the package is in the [config](../config) directory
 | Option | Default | Description |
 |---|---|---|
 | `default` | `'app'` | Default channel |
-| `channels` (merged) | `app`: daily file `var/logs/app.log` kept 25 days | Channels, see [Logging](logging.md#channels) |
+| `channels` (merged) | `app`: daily file `var/logs/app.log` kept 25 days, `emergency`: file `var/logs/laravel.log` of the emergency logger (used when a channel fails) | Channels, see [Logging](logging.md#channels) |
 
 ## router.php
 

@@ -28,5 +28,12 @@ return [
             'level' => 'debug',
             'days' => 25,
         ],
+
+        /**
+         * File of the emergency logger, used by Laravel when a channel cannot be built or fails to write.
+         */
+        'emergency' => [
+            'path' => Dir::getPath(Directory::Log, 'laravel.log'),
+        ],
     ],
 ];

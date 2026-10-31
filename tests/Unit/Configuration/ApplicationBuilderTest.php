@@ -93,14 +93,26 @@ final class ApplicationBuilderTest extends TestCase
     public function testWritesTheLogs(): void
     {
         $logs = $this->createTemporaryDirectory();
-        $app = Application::configure($this->createTemporaryDirectory())->withDirectory(Directory::Log, $logs)->create();
+        Application::configure($this->createTemporaryDirectory())->withDirectory(Directory::Log, $logs)->create();
 
         Log::info('Order synchronized.', ['order' => 12]);
 
         $files = glob($logs . '/app-*.log') ?: [];
         self::assertCount(1, $files);
         self::assertStringContainsString('app.INFO: Order synchronized. {"order":12}', (string) file_get_contents($files[0]));
-        self::assertSame($app->getBasePath() . '/var/logs', $app->storagePath('logs'));
+    }
+
+    public function testTheStoragePathIsTheVarDirectoryWithoutTrailingSlash(): void
+    {
+        $logs = $this->createTemporaryDirectory();
+        $app = Application::configure($this->createTemporaryDirectory())->withDirectory(Directory::Log, $logs)->create();
+
+        self::assertSame($app->getBasePath() . '/var', $app->storagePath());
+        self::assertSame($app->getBasePath() . '/var/framework/cache', $app->storagePath('framework/cache'));
+        self::assertSame($logs, $app->storagePath('logs'));
+        self::assertSame($logs . '/laravel.log', $app->storagePath('logs/laravel.log'));
+        self::assertSame($logs . '/laravel.log', $app->storagePath('/logs/laravel.log'));
+        self::assertSame($logs . '/laravel.log', $app->getConfig()->get('logging.channels.emergency.path'));
     }
 
     public function testAppliesTheDateTranslations(): void

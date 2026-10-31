@@ -73,13 +73,22 @@ final class Application extends Container
     }
 
     /**
-     * Called by the Illuminate components (e.g. the emergency logger of {@see \Illuminate\Log\LogManager}), the storage is the `var` directory.
+     * Called by the Illuminate components (e.g. the emergency logger of {@see \Illuminate\Log\LogManager}, which writes
+     * to `storagePath() . '/logs/laravel.log'`), the storage is the `var` directory.
+     *
+     * Like Laravel, the path has no trailing slash. The `logs` sub-path is the {@see Directory::Log} directory,
+     * so that the Illuminate logs follow a custom log directory.
      *
      * @throws Throwable
      */
     public function storagePath(string $path = ''): string
     {
-        return $this->getDir()->getPath(Directory::Var, $path);
+        $path = ltrim($path, '/\\');
+        if ($path === 'logs' || str_starts_with($path, 'logs/')) {
+            return rtrim($this->getDir()->getPath(Directory::Log, substr($path, 5)), '/\\');
+        }
+
+        return rtrim($this->getDir()->getPath(Directory::Var, $path), '/\\');
     }
 
     /**
