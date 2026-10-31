@@ -33,9 +33,9 @@
         "psr/log": "^2.0 || ^3.0",
         "symfony/cache": "^6.4.40",
         "symfony/http-foundation": "^6.4.46",
-        "symfony/property-access": "^6.4 || ^7.0",
+        "symfony/property-access": "^6.4.3 || ^7.0.3",
         "symfony/routing": "^6.4.41",
-        "symfony/translation-contracts": "^3.0",
+        "symfony/translation-contracts": "^3.4.2",
         "symfony/validator": "^6.4.11",
         "twig/twig": "^3.27"
     },
@@ -50,6 +50,15 @@
         "phpunit/phpunit": "12.5.42",
         "rector/rector": "2.8.3",
         "roots/wordpress": "7.1.4"
+    },
+    "conflict": {
+        "monolog/monolog": "<3.8",
+        "symfony/cache-contracts": "<2.5.3 || >=3.0,<3.4.2",
+        "symfony/clock": "<6.4.3 || >=7.0,<7.0.3",
+        "symfony/polyfill-php83": "<1.30",
+        "symfony/property-info": "<5.4.35 || >=6.0,<6.4.3 || >=7.0,<7.0.3",
+        "symfony/string": "<5.4.35 || >=6.0,<6.4.3 || >=7.0,<7.0.3",
+        "symfony/var-exporter": "<6.4.3 || >=7.0,<7.0.3"
     },
     "suggest": {
         "ext-gd": "Required by the towebp Twig filter (with the WebP support)",
