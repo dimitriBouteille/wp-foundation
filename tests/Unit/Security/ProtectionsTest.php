@@ -93,6 +93,23 @@ final class ProtectionsTest extends TestCase
 
         self::assertSame(1, has_action('template_redirect', [$protection, 'blockAuthorRequests']));
         self::assertSame(10, has_filter('author_link', 'function ()'));
+        self::assertSame(10, has_filter('rest_endpoints', [$protection, 'hideUserEndpoints']));
+    }
+
+    public function testPreventUserEnumerationHidesTheUsersRoutesOfTheRestApiToTheVisitors(): void
+    {
+        Functions\when('is_user_logged_in')->justReturn(false);
+        $endpoints = ['/wp/v2/users' => [], '/wp/v2/users/(?P<id>[\d]+)' => [], '/wp/v2/users/me' => [], '/wp/v2/posts' => [], '/app/v1/users-export' => []];
+
+        self::assertSame(['/wp/v2/posts', '/app/v1/users-export'], array_keys((new PreventUserEnumeration())->hideUserEndpoints($endpoints)));
+    }
+
+    public function testPreventUserEnumerationKeepsTheUsersRoutesOfTheRestApiForTheLoggedInUsers(): void
+    {
+        Functions\when('is_user_logged_in')->justReturn(true);
+        $endpoints = ['/wp/v2/users' => [], '/wp/v2/posts' => []];
+
+        self::assertSame($endpoints, (new PreventUserEnumeration())->hideUserEndpoints($endpoints));
     }
 
     public function testDisableOEmbed(): void

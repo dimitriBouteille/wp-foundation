@@ -58,7 +58,7 @@ return [
 |---|---|---|
 | `disableXmlRpc` | `true` | Disables the XML-RPC methods requiring authentication, removes the `X-Pingback` header and the RSD / WLW links |
 | `hideVersion` | `false` | Removes the generator tag and the `ver` query argument of the front-end scripts and styles |
-| `preventUserEnumeration` | `false` | Returns a 404 on the author pages and the `?author=` requests, the author links point to the home page |
+| `preventUserEnumeration` | `false` | Returns a 404 on the author pages and the `?author=` requests, the author links point to the home page, and the users routes of the REST API (`/wp/v2/users`) are hidden to the visitors who are not logged in |
 | `disableOEmbed` | `false` | Disables the oEmbed routes, discovery links and rewrite rules |
 | `hideRestApiDiscovery` | `true` | Removes the links advertising the REST API (head, HTTP header, RSD) |
 | `disableAdminRedirects` | `false` | Disables the redirections of `/admin`, `/login`, `/dashboard`, `/wp-admin` and `/wp-login.php`, so that a custom admin location is not revealed |
