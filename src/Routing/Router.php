@@ -117,13 +117,13 @@ final class Router implements RouterInterface
     /**
      * Executes the controller of the route matching the current request. The trailing slash is ignored:
      * `/account/register/` matches the `/account/register` route, and `/account/register` the `/account/register/` route.
-     * Nothing is matched under WP-CLI, where the request path is always `/`.
+     * Only the front-end requests are matched, see {@see shouldMatchCurrentRequest()}.
      *
      * @throws \Exception
      */
     public function matchCurrentRoute(): void
     {
-        if (defined('WP_CLI') && constant('WP_CLI')) {
+        if (!$this->shouldMatchCurrentRequest()) {
             return;
         }
 
@@ -225,6 +225,38 @@ final class Router implements RouterInterface
         unset($config['_controller']);
         $executor = new RouteExecutor($this->container, $controller, $config, $this->request);
         $executor->execute();
+    }
+
+    /**
+     * Only the front-end requests served by `index.php` are matched: a route with a variable first segment (`/{slug}`)
+     * must not take over the other entry points of WordPress (login, cron, admin, AJAX, XML-RPC, REST API).
+     * Under WP-CLI, the request path is always `/`.
+     *
+     * The URLs of the routes can still be generated in these contexts (e.g. an email sent by a cron event).
+     */
+    private function shouldMatchCurrentRequest(): bool
+    {
+        if (
+            (defined('WP_CLI') && constant('WP_CLI'))
+            || (defined('XMLRPC_REQUEST') && constant('XMLRPC_REQUEST'))
+            || is_admin()
+            || wp_doing_ajax()
+            || wp_doing_cron()
+        ) {
+            return false;
+        }
+
+        // wp-login.php, wp-cron.php, wp-signup.php, xmlrpc.php, ... (set by WordPress from the executed script)
+        $page = $GLOBALS['pagenow'] ?? 'index.php';
+        if ($page !== 'index.php') {
+            return false;
+        }
+
+        // The REST API is served by index.php: /wp-json/... or ?rest_route=...
+        $restPrefix = '/' . trim(rest_get_url_prefix(), '/') . '/';
+
+        return !$this->request->query->has('rest_route')
+            && !str_starts_with(rtrim($this->requestContext->getPathInfo(), '/') . '/', $restPrefix);
     }
 
     /**

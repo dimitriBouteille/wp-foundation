@@ -27,19 +27,32 @@ final class RouterTest extends TestCase
      */
     private array $server;
 
+    /**
+     * @var array<mixed>
+     */
+    private array $get;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->server = $_SERVER;
+        $this->get = $_GET;
+        $GLOBALS['pagenow'] = 'index.php';
         RecordedResponse::$sent = [];
         Functions\when('home_url')->justReturn('https://example.com');
         Functions\when('wp_parse_url')->alias('parse_url');
+        Functions\when('is_admin')->justReturn(false);
+        Functions\when('wp_doing_ajax')->justReturn(false);
+        Functions\when('wp_doing_cron')->justReturn(false);
+        Functions\when('rest_get_url_prefix')->justReturn('wp-json');
     }
 
     protected function tearDown(): void
     {
         $_SERVER = $this->server;
+        $_GET = $this->get;
+        unset($GLOBALS['pagenow']);
         parent::tearDown();
     }
 
@@ -110,6 +123,61 @@ final class RouterTest extends TestCase
         $this->createRouter('/')->matchCurrentRoute();
 
         self::assertSame([], RecordedResponse::$sent);
+    }
+
+    /**
+     * @return iterable<string, array{string, \Closure(): void}>
+     */
+    public static function otherEntryPointProvider(): iterable
+    {
+        yield 'admin' => ['/wp-admin/edit.php', fn () => Functions\when('is_admin')->justReturn(true)];
+        yield 'ajax' => ['/wp-admin/admin-ajax.php', fn () => Functions\when('wp_doing_ajax')->justReturn(true)];
+        yield 'cron' => ['/wp-cron.php', fn () => Functions\when('wp_doing_cron')->justReturn(true)];
+        yield 'login' => ['/wp-login.php', function (): void {
+            $GLOBALS['pagenow'] = 'wp-login.php';
+        }];
+        yield 'xml-rpc' => ['/xmlrpc.php', function (): void {
+            $GLOBALS['pagenow'] = 'xmlrpc.php';
+        }];
+        yield 'rest api' => ['/wp-json', fn (): null => null];
+        yield 'rest api route' => ['/wp-json/wp/v2/posts', fn (): null => null];
+        yield 'rest api query' => ['/?rest_route=/wp/v2/posts', fn (): null => null];
+    }
+
+    /**
+     * @param \Closure(): void $context
+     */
+    #[DataProvider('otherEntryPointProvider')]
+    public function testOnlyMatchesTheFrontEndRequests(string $uri, \Closure $context): void
+    {
+        $context();
+        $router = $this->createRouter($uri);
+        $router->add(new Route('page', '/{slug}', ['_controller' => fn (): RecordedResponse => new RecordedResponse('page')], ['slug' => '.+']));
+
+        $router->matchCurrentRoute();
+
+        self::assertSame([], RecordedResponse::$sent);
+    }
+
+    public function testAVariableRouteMatchesTheFrontEndRequests(): void
+    {
+        $router = $this->createRouter('/about-us');
+        $router->add(new Route('page', '/{slug}', ['_controller' => fn (): RecordedResponse => new RecordedResponse('page')], ['slug' => '.+']));
+
+        $router->matchCurrentRoute();
+
+        self::assertSame('page', RecordedResponse::$sent[0]->action ?? null);
+    }
+
+    public function testGeneratesTheUrlsOutsideTheFrontEnd(): void
+    {
+        Functions\when('wp_doing_cron')->justReturn(true);
+        $router = $this->createRouter('/wp-cron.php');
+
+        $router->matchCurrentRoute();
+
+        self::assertSame([], RecordedResponse::$sent);
+        self::assertSame('https://example.com/blog/42', $router->generate('blog_show', ['id' => 42], UrlGeneratorInterface::ABSOLUTE_URL));
     }
 
     public function testWorksWhenWordPressIsInstalledInASubdirectory(): void

@@ -75,6 +75,8 @@ A namespace can contain `*` wildcards, e.g. to find the controllers of all the m
 
 A namespace without wildcard must exist in the Composer autoloader, otherwise an exception is thrown. A namespace with wildcards matching no directory is ignored.
 
+Only the front-end requests served by `index.php` are matched: a route like `/{slug}` does not take over the admin, AJAX, cron, login, XML-RPC and REST API requests. The URLs of the routes can still be generated in these contexts, e.g. in an email sent by a cron event (use `UrlGeneratorInterface::ABSOLUTE_URL`).
+
 The controllers are discovered on `init`, once the plugins are loaded: a controller can extend a class of a plugin (e.g. WooCommerce). In production, the routes are cached, so that the controllers are not scanned on every request: run `wp app:cache:clear` on each deployment (see [Cache](cache.md#clear-the-cache)). A change of `router.namespaces` is seen without clearing the cache.
 
 ## Actions
