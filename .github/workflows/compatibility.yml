@@ -33,6 +33,3 @@ jobs:
 
       - name: PHPStan Analyse
         run: composer phpstan
-
-      - name: Unit tests
-        run: composer test

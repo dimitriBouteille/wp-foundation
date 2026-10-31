@@ -2,6 +2,7 @@
 
 [![GitHub Release](https://img.shields.io/github/v/release/dimitriBouteille/wp-foundation)](https://github.com/dimitriBouteille/wp-foundation/releases)
 [![Compatibility](https://img.shields.io/github/actions/workflow/status/dimitriBouteille/wp-foundation/compatibility.yml?label=compatibility)](https://github.com/dimitriBouteille/wp-foundation/actions/workflows/compatibility.yml)
+[![Tests](https://img.shields.io/github/actions/workflow/status/dimitriBouteille/wp-foundation/tests.yml?label=tests)](https://github.com/dimitriBouteille/wp-foundation/actions/workflows/tests.yml)
 [![Packagist Downloads](https://img.shields.io/packagist/dt/dbout/wp-foundation?color=yellow)](https://packagist.org/packages/dbout/wp-foundation)
 
 Lightweight application foundation for WordPress: service container, attribute-based routing and WP-CLI commands, Twig views, validation, cache and security hardening, built on Symfony and Illuminate components.
