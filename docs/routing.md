@@ -161,6 +161,9 @@ Router::generate('cart');    // the URL of the WooCommerce cart page
 
 The `home` custom path (home URL) is defined by default.
 
+- The parameters are added to the query string of the URL: `Router::generate('cart', ['s' => 'x'])` gives `.../cart/?s=x`, or `...?page_id=5&s=x` with plain permalinks.
+- When the custom path returns no URL (`false`, e.g. the page does not exist), the route of the same name is used. Without route, a `RouteNotFoundException` is thrown.
+
 ### In the templates
 
 Add the `RouterExtension` to the Twig extensions:

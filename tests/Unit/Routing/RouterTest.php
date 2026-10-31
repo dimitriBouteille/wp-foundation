@@ -157,6 +157,30 @@ final class RouterTest extends TestCase
         self::assertSame('https://example.com/?s=first%20aid', $router->generate('home', ['s' => 'first aid']));
     }
 
+    public function testAddsTheQueryToTheQueryOfTheCustomPath(): void
+    {
+        $router = $this->createRouter('/', customPaths: ['cart' => fn (): string => 'https://example.com/?page_id=5#items']);
+
+        self::assertSame('https://example.com/?page_id=5&s=x#items', $router->generate('cart', ['s' => 'x']));
+    }
+
+    public function testUsesTheRouteWhenTheCustomPathReturnsNoUrl(): void
+    {
+        $router = $this->createRouter('/', customPaths: ['cart' => fn (): false => false]);
+
+        self::assertSame('/cart', $router->generate('cart'));
+    }
+
+    public function testThrowsWhenTheCustomPathReturnsNoUrlWithoutRoute(): void
+    {
+        $router = $this->createRouter('/', customPaths: ['contact' => fn (): false => false]);
+
+        $this->expectException(RouteNotFoundException::class);
+        $this->expectExceptionMessage('The custom path "contact" returned no URL');
+
+        $router->generate('contact');
+    }
+
     public function testTheCustomPathMustBeCallable(): void
     {
         $router = $this->createRouter('/', customPaths: ['home' => 'https://example.com/']);
