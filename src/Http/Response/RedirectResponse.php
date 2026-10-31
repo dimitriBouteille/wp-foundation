@@ -42,11 +42,14 @@ class RedirectResponse implements ResponseInterface
     }
 
     /**
+     * Same as `wp_safe_redirect()`, but with the home URL as fallback instead of the admin URL,
+     * so that an unsafe URL does not reveal the admin location.
+     *
      * @inheritDoc
      */
     public function send(): never
     {
-        wp_safe_redirect($this->url, $this->status, home_url());
+        wp_redirect(wp_validate_redirect(wp_sanitize_redirect($this->url), home_url()), $this->status);
         die;
     }
 }

@@ -84,6 +84,24 @@ final class ResponseTest extends TestCase
         new RedirectResponse('');
     }
 
+    public function testTheRedirectResponseRedirectsAnUnsafeUrlToTheHomeUrl(): void
+    {
+        Functions\when('home_url')->justReturn('https://example.com');
+        Functions\when('wp_sanitize_redirect')->returnArg();
+        Functions\expect('wp_validate_redirect')
+            ->once()
+            ->with('https://evil.example.org', 'https://example.com')
+            ->andReturn('https://example.com');
+        Functions\expect('wp_redirect')
+            ->once()
+            ->with('https://example.com', 301)
+            ->andThrow(new \RuntimeException('wp_redirect'));
+
+        $this->expectExceptionMessage('wp_redirect');
+
+        (new RedirectResponse('https://evil.example.org', 301))->send();
+    }
+
     public function testTheViewResponseReplacesThe404StatusOfWordPress(): void
     {
         Functions\when('get_status_header_desc')->justReturn('Created');
