@@ -45,11 +45,12 @@ final class Router implements RouterInterface
         $this->requestContext->fromRequest($this->request);
         $this->requestContext->setBaseUrl('');
 
-        // Force the scheme/host/port from WordPress so absolute URLs are correct even
-        // when generated outside a web request (WP-Cron, CLI, etc.) where the
-        // globals do not contain a valid host.
+        // Force the scheme/host/port and the base path from WordPress so the URLs are correct even
+        // when generated outside a web request (WP-Cron, CLI, etc.) where the globals do not contain
+        // a valid host, and when WordPress is installed in a subdirectory (https://example.com/blog).
         $home = wp_parse_url(home_url());
         if (is_array($home)) {
+            $this->requestContext->setBaseUrl(rtrim(is_string($home['path'] ?? null) ? $home['path'] : '', '/'));
             $scheme = is_string($home['scheme'] ?? null) ? $home['scheme'] : 'https';
             $port = is_int($home['port'] ?? null) ? $home['port'] : null;
             $this->requestContext
@@ -101,15 +102,21 @@ final class Router implements RouterInterface
     }
 
     /**
+     * Executes the controller of the route matching the current request. The trailing slash is ignored:
+     * `/account/register/` matches the `/account/register` route, and `/account/register` the `/account/register/` route.
+     * Nothing is matched under WP-CLI, where the request path is always `/`.
+     *
      * @throws \Exception
      */
     public function matchCurrentRoute(): void
     {
-        try {
-            $match = $this->match(rtrim($this->requestContext->getPathInfo(), '/'));
+        if (defined('WP_CLI') && constant('WP_CLI')) {
+            return;
+        }
+
+        $match = $this->matchIgnoringTheTrailingSlash($this->requestContext->getPathInfo());
+        if ($match !== null) {
             $this->executeAction($match);
-        } catch (ResourceNotFoundException|MethodNotAllowedException) {
-            // Not a controller route (or not for this HTTP method): WordPress handles the request.
         }
     }
 
@@ -194,5 +201,26 @@ final class Router implements RouterInterface
         unset($config['_controller']);
         $executor = new RouteExecutor($this->container, $controller, $config, $this->request);
         $executor->execute();
+    }
+
+    /**
+     * @return array<string, mixed>|null Null when it is not a controller route (or not for this HTTP method): WordPress handles the request.
+     */
+    private function matchIgnoringTheTrailingSlash(string $pathinfo): ?array
+    {
+        $trimmed = rtrim($pathinfo, '/');
+        $paths = [$pathinfo];
+        if ($trimmed !== '') {
+            $paths[] = $trimmed === $pathinfo ? $pathinfo . '/' : $trimmed;
+        }
+
+        foreach ($paths as $path) {
+            try {
+                return $this->match($path);
+            } catch (ResourceNotFoundException|MethodNotAllowedException) {
+            }
+        }
+
+        return null;
     }
 }

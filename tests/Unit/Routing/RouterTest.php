@@ -14,6 +14,7 @@ use Dbout\WpFoundation\Tests\Fixtures\Http\RecordedResponse;
 use Dbout\WpFoundation\Tests\TestCase;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -64,12 +65,17 @@ final class RouterTest extends TestCase
         yield 'with trailing slash' => ['/blog/', 'blog_index'];
         yield 'nested controller' => ['/admin/orders/AB-12/', 'admin_order'];
         yield 'home page' => ['/', 'home'];
+        yield 'route with a trailing slash' => ['/account/register', 'register'];
+        yield 'route with a trailing slash, requested with it' => ['/account/register/', 'register'];
     }
 
     #[DataProvider('trailingSlashProvider')]
     public function testTheTrailingSlashIsIgnored(string $uri, string $action): void
     {
-        $this->createRouter($uri)->matchCurrentRoute();
+        $router = $this->createRouter($uri);
+        $router->add(new Route('register', '/account/register/', ['_controller' => fn (): RecordedResponse => new RecordedResponse('register')]));
+
+        $router->matchCurrentRoute();
 
         self::assertSame($action, RecordedResponse::$sent[0]->action ?? null);
     }
@@ -93,6 +99,30 @@ final class RouterTest extends TestCase
         $this->createRouter('/blog/first-post')->matchCurrentRoute();
 
         self::assertSame([], RecordedResponse::$sent);
+    }
+
+    #[RunInSeparateProcess]
+    public function testDoesNotMatchTheRoutesUnderWpCli(): void
+    {
+        define('WP_CLI', true);
+
+        $this->createRouter('/')->matchCurrentRoute();
+
+        self::assertSame([], RecordedResponse::$sent);
+    }
+
+    public function testWorksWhenWordPressIsInstalledInASubdirectory(): void
+    {
+        Functions\when('home_url')->justReturn('https://example.com/blog/');
+        $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'] = '/blog/index.php';
+        $_SERVER['SCRIPT_FILENAME'] = '/var/www/blog/index.php';
+        $router = $this->createRouter('/blog/cart');
+
+        $router->matchCurrentRoute();
+
+        self::assertSame('cart', RecordedResponse::$sent[0]->action ?? null);
+        self::assertSame('/blog/blog/42', $router->generate('blog_show', ['id' => 42]));
+        self::assertSame('https://example.com/blog/cart', $router->generate('cart', [], UrlGeneratorInterface::ABSOLUTE_URL));
     }
 
     public function testMatchesTheRoutesOnInit(): void

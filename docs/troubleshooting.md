@@ -4,7 +4,8 @@
 
 - Check that the namespace of the controller is in `router.namespaces` and exists in the Composer autoloader (`composer dump-autoload` after adding a namespace).
 - Check that the file follows PSR-4: the class name is derived from the file path, a class named differently from its file is ignored.
-- The trailing slash is ignored: `/account/register/` matches the `/account/register` route.
+- The trailing slash is ignored: `/account/register/` matches the `/account/register` route, and `/account/register` matches the `/account/register/` route.
+- The routes are not matched under WP-CLI.
 - A route only matches its `methods`: a `POST` on a `GET` route is handled by WordPress (404).
 - The routes are matched on `init`: a plugin redirecting earlier (e.g. on `plugins_loaded`) takes precedence.
 
