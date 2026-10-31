@@ -60,6 +60,38 @@ final class ApplicationTest extends TestCase
         self::assertSame(['register', 'boot'], $provider->calls);
     }
 
+    public function testBootsAProviderRegisteredAfterTheBoot(): void
+    {
+        $app = $this->createApplication();
+        $app->boot();
+
+        $provider = $app->register(RecordingProvider::class);
+
+        self::assertInstanceOf(RecordingProvider::class, $provider);
+        self::assertSame(['register', 'boot'], $provider->calls);
+    }
+
+    public function testBootsAProviderRegisteredByTheBootOfAnotherProvider(): void
+    {
+        $app = $this->createApplication();
+        $app->register(new readonly class ($app) {
+            public function __construct(
+                private Application $app,
+            ) {}
+
+            public function boot(): void
+            {
+                $this->app->register(RecordingProvider::class);
+            }
+        });
+
+        $app->boot();
+
+        $provider = $app->getProvider(RecordingProvider::class);
+        self::assertInstanceOf(RecordingProvider::class, $provider);
+        self::assertSame(['register', 'boot'], $provider->calls);
+    }
+
     public function testThePathsAreNullUntilTheyAreSet(): void
     {
         $app = $this->createApplication();

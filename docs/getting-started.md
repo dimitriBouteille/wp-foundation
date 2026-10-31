@@ -202,6 +202,7 @@ final class AppServiceProvider
 
 - `register()` only adds the services to the container, the other providers may not be registered yet.
 - `boot()` is called once all the providers are registered, it is the place to add the WordPress hooks.
+- A provider registered later with `app()->register()` (e.g. by a plugin on `plugins_loaded`, or from the `boot()` of another provider) is booted immediately.
 
 The providers of the package are registered before the ones of the project: router, WP-CLI commands, Twig, assets, images, security and translations.
 

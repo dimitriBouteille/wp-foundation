@@ -40,11 +40,6 @@ final class Application extends Container
      */
     protected array $serviceProviders = [];
 
-    /**
-     * @var array<class-string, bool>
-     */
-    protected array $loadedProviders = [];
-
     protected string $basePath;
 
     protected ?string $configDirectory = null;
@@ -52,6 +47,8 @@ final class Application extends Container
     protected ?string $bootstrapDirectory = null;
 
     protected bool $booted = false;
+
+    protected bool $booting = false;
 
     /**
      * @param string $basePath Absolute path of the project root (the directories, e.g. `var`, are relative to it)
@@ -131,6 +128,9 @@ final class Application extends Container
     /**
      * Register a service provider, once: the provider already registered is returned unless `$force` is true.
      *
+     * Like Laravel, a provider registered once the application is booted (e.g. by a plugin on `plugins_loaded`),
+     * or while it is booting (from the `boot()` of another provider), is booted immediately.
+     *
      * @param object|class-string $provider Provider instance or class, the class is built with the application
      * @return object The registered provider
      */
@@ -170,6 +170,10 @@ final class Application extends Container
 
         $this->markAsRegistered($provider);
 
+        if ($this->booting || $this->booted) {
+            $this->bootProvider($provider);
+        }
+
         return $provider;
     }
 
@@ -197,16 +201,17 @@ final class Application extends Container
      */
     public function boot(): void
     {
-        if ($this->booted) {
+        if ($this->booted || $this->booting) {
             return;
         }
 
+        // The providers registered while booting are booted by register(), they are not in this copy of the list
+        $this->booting = true;
         foreach ($this->serviceProviders as $provider) {
-            if (method_exists($provider, 'boot')) {
-                $provider->boot();
-            }
+            $this->bootProvider($provider);
         }
 
+        $this->booting = false;
         $this->booted = true;
     }
 
@@ -311,6 +316,13 @@ final class Application extends Container
         }
     }
 
+    protected function bootProvider(object $provider): void
+    {
+        if (method_exists($provider, 'boot')) {
+            $provider->boot();
+        }
+    }
+
     protected function registerBaseBindings(): self
     {
         self::setInstance($this);
@@ -329,7 +341,6 @@ final class Application extends Container
     {
         $class = $provider::class;
         $this->serviceProviders[$class] = $provider;
-        $this->loadedProviders[$class] = true;
     }
 
     private function joinPaths(string $directory, string $path): string
