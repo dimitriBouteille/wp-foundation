@@ -9,6 +9,7 @@ namespace Dbout\WpFoundation\Validator;
 
 use Dbout\WpFoundation\Translation\WordPressTranslator;
 use Dbout\WpFoundation\Validator\Mapping\Loader\AttributeLoader;
+use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
@@ -67,9 +68,8 @@ class Validator
         if ($source instanceof \WP_REST_Request) {
             $source = $source->get_params();
         } elseif ($source instanceof Request) {
-            $source = array_merge(
-                $source->query->all(),
-            );
+            // The values of the body (form or JSON) replace the ones of the query string, like $_REQUEST
+            $source = array_replace($source->query->all(), $this->getBody($source));
         }
 
         if (!is_iterable($source)) {
@@ -91,6 +91,21 @@ class Validator
                 $accessor->setValue($value, $key, $data);
             } catch (\Exception) {
             }
+        }
+    }
+
+    /**
+     * The values of the body: the form fields (`application/x-www-form-urlencoded`, `multipart/form-data`) or the
+     * decoded JSON. A body that is not a JSON object (plain text, invalid JSON) gives no value.
+     *
+     * @return array<array-key, mixed>
+     */
+    protected function getBody(Request $request): array
+    {
+        try {
+            return $request->getPayload()->all();
+        } catch (JsonException) {
+            return [];
         }
     }
 

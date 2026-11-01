@@ -108,6 +108,47 @@ final class ValidatorTest extends TestCase
         self::assertSame('John', $form->name);
     }
 
+    public function testHydratesTheObjectFromTheFormBodyOfTheRequest(): void
+    {
+        $form = new ContactForm();
+
+        // The body replaces the query string
+        (new Validator())->validate($form, Request::create('/contact?name=Query&email=john@example.com', 'POST', ['name' => 'John']));
+
+        self::assertSame('John', $form->name);
+        self::assertSame('john@example.com', $form->email);
+    }
+
+    public function testHydratesTheObjectFromTheJsonBodyOfTheRequest(): void
+    {
+        $form = new ContactForm();
+        $request = Request::create('/contact', 'POST', server: ['CONTENT_TYPE' => 'application/json'], content: '{"name":"John"}');
+
+        (new Validator())->validate($form, $request);
+
+        self::assertSame('John', $form->name);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function invalidBodies(): iterable
+    {
+        yield 'invalid JSON' => ['{"name":'];
+        yield 'plain text' => ['Hello'];
+        yield 'JSON scalar' => ['"John"'];
+    }
+
+    #[DataProvider('invalidBodies')]
+    public function testABodyThatIsNotAJsonObjectGivesNoValue(string $content): void
+    {
+        $form = new ContactForm();
+
+        (new Validator())->validate($form, Request::create('/contact?name=John', 'POST', content: $content));
+
+        self::assertSame('John', $form->name);
+    }
+
     public function testIgnoresTheFieldsThatCannotBeHydrated(): void
     {
         $form = new ContactForm();

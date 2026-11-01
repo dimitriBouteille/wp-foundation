@@ -44,7 +44,7 @@ The second argument is the source of the values:
 | Source | Values |
 |---|---|
 | `WP_REST_Request` | All the parameters (`get_params()`) |
-| `Symfony\Component\HttpFoundation\Request` | The query string |
+| `Symfony\Component\HttpFoundation\Request` | The query string and the body (form fields or JSON object), the body wins |
 | Array or iterable | Its values |
 | `null` | No hydration, the value is only validated |
 
