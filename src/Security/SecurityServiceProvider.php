@@ -35,8 +35,9 @@ final readonly class SecurityServiceProvider
         $config = $this->app->getConfig();
 
         $headers = $config->get('security.headers', []);
-        if (is_array($headers) && $headers !== []) {
-            (new SecurityHeaders(array_filter($headers, fn (mixed $value): bool => is_string($value) || $value === null)))->register();
+        $headers = is_array($headers) ? array_filter($headers, is_string(...)) : [];
+        if ($headers !== []) {
+            (new SecurityHeaders($headers))->register();
         }
 
         foreach (self::PROTECTIONS as $option => $class) {

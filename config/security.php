@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 return [
     /**
-     * HTTP headers sent on the front-end responses, set a header to null to not send it.
+     * HTTP headers sent on the responses outside the administration, set a header to null to not send it.
      */
     'headers' => [
         'X-Frame-Options' => 'SAMEORIGIN',

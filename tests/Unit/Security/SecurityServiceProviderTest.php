@@ -17,7 +17,7 @@ final class SecurityServiceProviderTest extends TestCase
     {
         $this->boot(null);
 
-        self::assertNotFalse(has_action('send_headers'));
+        self::assertSame(1, has_action('init', 'Dbout\WpFoundation\Security\SecurityHeaders->send()'));
         self::assertNotFalse(has_filter('xmlrpc_enabled', '__return_false'));
         self::assertNotFalse(has_action('init', 'Dbout\WpFoundation\Security\HideRestApiDiscovery->removeDiscoveryHints()'));
         self::assertFalse(has_filter('the_generator'));
@@ -55,7 +55,6 @@ final class SecurityServiceProviderTest extends TestCase
 
         $this->boot($directory);
 
-        self::assertNotFalse(has_action('send_headers'));
         self::assertFalse(has_filter('xmlrpc_enabled'));
         self::assertFalse(has_action('init'));
     }

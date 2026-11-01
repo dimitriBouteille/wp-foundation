@@ -42,7 +42,7 @@ return [
 
 ## HTTP headers
 
-`headers` are sent on the front-end responses (not in the administration). Set a header to `null` to not send it:
+`headers` are sent on all the responses outside the administration, on `init` (before the router): the responses of the controllers (`Response`, `JsonResponse`, ...) and the REST API responses get them too. Set a header to `null` to not send it:
 
 ```php
 'headers' => [

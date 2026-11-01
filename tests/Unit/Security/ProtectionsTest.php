@@ -185,11 +185,31 @@ final class ProtectionsTest extends TestCase
     public function testSecurityHeadersAreNotSentInTheAdministration(): void
     {
         Functions\when('is_admin')->justReturn(true);
-        $headers = new SecurityHeaders(['X-Frame-Options' => 'SAMEORIGIN']);
+        $headers = new SecurityHeaders(['X-Frame-Options' => 'SAMEORIGIN'], function (): never {
+            self::fail('No header must be sent in the administration.');
+        });
+
+        $headers->send();
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function testSecurityHeadersAreSentBeforeTheRouter(): void
+    {
+        Functions\when('is_admin')->justReturn(false);
+        $sent = [];
+        $headers = new SecurityHeaders(
+            ['X-Frame-Options' => 'SAMEORIGIN', 'X-Content-Type-Options' => 'nosniff', 'Referrer-Policy' => null],
+            function (string $header) use (&$sent): void {
+                $sent[] = $header;
+            },
+        );
         $headers->register();
 
         $headers->send();
 
-        self::assertSame(10, has_action('send_headers', [$headers, 'send']));
+        // The router matches the request on init (priority 10), its responses stop the script before send_headers
+        self::assertSame(1, has_action('init', [$headers, 'send']));
+        self::assertSame(['X-Frame-Options: SAMEORIGIN', 'X-Content-Type-Options: nosniff'], $sent);
     }
 }
