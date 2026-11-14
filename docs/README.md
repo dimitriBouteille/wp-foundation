@@ -4,6 +4,7 @@
 
 - [Getting started](getting-started.md): installation, lifecycle, project structure, configuration, container, service providers, directories, class finder, facades
 - [Configuration reference](configuration.md): all the options and their default values
+- [Modules](modules.md): features enabled per site, with their controllers, commands, views and providers
 
 ## Features
 

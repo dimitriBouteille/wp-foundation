@@ -14,7 +14,13 @@ use Dbout\WpFoundation\Application;
 use Dbout\WpFoundation\Cache\Adapter\TagAwareAdapter;
 use Dbout\WpFoundation\Facades\Log;
 use Dbout\WpFoundation\Filesystem\Directory;
+use Dbout\WpFoundation\Module\Exception\ModuleException;
+use Dbout\WpFoundation\Module\ModuleList;
 use Dbout\WpFoundation\Routing\Router;
+use Dbout\WpFoundation\Tests\Fixtures\Modules\Blog\BlogModule;
+use Dbout\WpFoundation\Tests\Fixtures\Modules\Shop\ShopModule;
+use Dbout\WpFoundation\Tests\Fixtures\Modules\Shop\ShopServiceProvider;
+use Dbout\WpFoundation\Tests\Fixtures\Modules\UserAccount\UserAccountModule;
 use Dbout\WpFoundation\Tests\Fixtures\Providers\RecordingProvider;
 use Dbout\WpFoundation\Tests\TestCase;
 use Dbout\WpFoundation\View\AssetResolver;
@@ -88,6 +94,61 @@ final class ApplicationBuilderTest extends TestCase
             ->create();
 
         self::assertInstanceOf(RecordingProvider::class, $app->getProvider(RecordingProvider::class));
+    }
+
+    public function testEnablesTheModulesOfTheBootstrapFileAndTheGivenOnes(): void
+    {
+        $app = Application::configure($this->createTemporaryDirectory())
+            ->withPaths(bootstrap: self::fixturePath('bootstrap-modules'))
+            ->withModules([UserAccountModule::class])
+            ->create();
+
+        $modules = $app->getModules();
+        self::assertSame([UserAccountModule::class, ShopModule::class, BlogModule::class], array_keys($modules->all()));
+        self::assertSame($modules, $app->get('modules'));
+
+        $provider = $app->getProvider(ShopServiceProvider::class);
+        self::assertInstanceOf(ShopServiceProvider::class, $provider);
+        self::assertSame(['register', 'boot'], $provider->calls);
+
+        self::assertSame(['Dbout\\WpFoundation\\Tests\\Fixtures\\Modules\\Shop\\Console\\'], array_slice((array) $app->getConfig()->get('console.namespaces'), -1));
+        $router = $app->get('router');
+        self::assertInstanceOf(Router::class, $router);
+        self::assertNotNull($router->getRouteCollection()->get('blog_show'));
+
+        $twig = $app->get('twig');
+        self::assertInstanceOf(Environment::class, $twig);
+        self::assertTrue($twig->getLoader()->exists('@blog/post.twig'));
+        self::assertTrue($twig->getLoader()->exists('@userAccount/register.twig'));
+    }
+
+    public function testWithoutModulesTheListIsEmpty(): void
+    {
+        $app = Application::configure($this->createTemporaryDirectory())->create();
+
+        self::assertCount(0, $app->getModules());
+        self::assertInstanceOf(ModuleList::class, $app->get('modules'));
+    }
+
+    public function testThrowsWhenADependencyOfAModuleIsNotEnabled(): void
+    {
+        $this->expectException(ModuleException::class);
+        $this->expectExceptionMessage(UserAccountModule::class);
+
+        Application::configure($this->createTemporaryDirectory())
+            ->withPaths(bootstrap: self::fixturePath('bootstrap-modules'))
+            ->create();
+    }
+
+    public function testThrowsWhenAServiceProviderDoesNotExist(): void
+    {
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('The service provider App\\UnknownProvider does not exist.');
+
+        $bootstrap = $this->createTemporaryDirectory();
+        file_put_contents($bootstrap . '/providers.php', '<?php return ["App\\\\UnknownProvider"];');
+
+        Application::configure($this->createTemporaryDirectory())->withPaths(bootstrap: $bootstrap)->create();
     }
 
     public function testWritesTheLogs(): void
