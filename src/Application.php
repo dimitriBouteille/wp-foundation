@@ -12,6 +12,7 @@ use Dbout\WpFoundation\Config\Repository;
 use Dbout\WpFoundation\Configuration\ApplicationBuilder;
 use Dbout\WpFoundation\Filesystem\Directory;
 use Dbout\WpFoundation\Filesystem\DirectoryList;
+use Dbout\WpFoundation\Module\ModuleList;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Facade;
@@ -244,6 +245,14 @@ final class Application extends Container
     }
 
     /**
+     * Get the path to the module list in the bootstrap directory, null when the bootstrap directory is not set.
+     */
+    public function getBootstrapModulesPath(): ?string
+    {
+        return $this->bootstrapPath('modules.php');
+    }
+
+    /**
      * Get the path to the bootstrap directory, null when it is not set (see {@see ApplicationBuilder::withPaths()}).
      */
     public function bootstrapPath(string $path = ''): ?string
@@ -296,6 +305,19 @@ final class Application extends Container
         $config = $this->get('config');
 
         return $config;
+    }
+
+    /**
+     * Enabled modules, see {@see ApplicationBuilder::withModules()}.
+     *
+     * @throws Throwable
+     */
+    public function getModules(): ModuleList
+    {
+        /** @var ModuleList $modules */
+        $modules = $this->get(ModuleList::class);
+
+        return $modules;
     }
 
     /**

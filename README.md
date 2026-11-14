@@ -32,6 +32,7 @@ Only these components are installed, not the full frameworks: WordPress keeps it
 
 - ✅ Service container ([Illuminate](https://laravel.com/docs/container)) with service providers and facades
 - ✅ Configuration files merged with the default configuration of the package
+- ✅ Modules enabled per site, their controllers, commands and views found by convention
 - ✅ Routing with PHP attributes on top of [Symfony Routing](https://symfony.com/doc/current/routing.html), controllers discovered from PSR-4 namespaces (wildcards supported)
 - ✅ HTTP responses (view, redirect, JSON, errors) and HTTP exceptions
 - ✅ WP-CLI commands declared with a `#[Command]` attribute
@@ -66,6 +67,7 @@ The documentation is in the [docs](docs/README.md) directory:
 
 - [Getting started](docs/getting-started.md)
 - [Configuration reference](docs/configuration.md)
+- [Modules](docs/modules.md)
 - [Routing](docs/routing.md)
 - [Views](docs/views.md)
 - [Validation](docs/validation.md)

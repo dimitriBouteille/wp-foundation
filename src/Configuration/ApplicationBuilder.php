@@ -17,6 +17,8 @@ use Dbout\WpFoundation\Filesystem\Directory;
 use Dbout\WpFoundation\Filesystem\DirectoryInterface;
 use Dbout\WpFoundation\Filesystem\DirectoryList;
 use Dbout\WpFoundation\Image\ImageServiceProvider;
+use Dbout\WpFoundation\Module\ModuleInterface;
+use Dbout\WpFoundation\Module\ModuleList;
 use Dbout\WpFoundation\Routing\RouterServiceProvider;
 use Dbout\WpFoundation\Security\SecurityServiceProvider;
 use Dbout\WpFoundation\Translation\DateServiceProvider;
@@ -51,6 +53,11 @@ final class ApplicationBuilder
      * @var array<object|class-string>
      */
     private array $providers = [];
+
+    /**
+     * @var array<ModuleInterface|class-string<ModuleInterface>>
+     */
+    private array $modules = [];
 
     /**
      * @var array<array{DirectoryInterface, string}>
@@ -105,8 +112,21 @@ final class ApplicationBuilder
     }
 
     /**
-     * Load the configuration, register the service providers (they can add their own paths to the configuration),
-     * then boot them.
+     * Enable modules, in addition to the ones of the bootstrap `modules.php` file.
+     *
+     * @param array<ModuleInterface|class-string<ModuleInterface>> $modules
+     * @return $this
+     */
+    public function withModules(array $modules = []): self
+    {
+        $this->modules = array_merge($this->modules, $modules);
+
+        return $this;
+    }
+
+    /**
+     * Load the configuration, add the configuration of the modules, register the service providers
+     * (they can add their own paths to the configuration), then boot them.
      *
      * @throws \Throwable
      */
@@ -114,7 +134,8 @@ final class ApplicationBuilder
     {
         $this->registerDefaultBindings();
         $this->app->bootstrapWith(self::DEFAULT_BOOTSTRAPPERS);
-        $this->registerProviders();
+        $modules = $this->loadModules();
+        $this->registerProviders($modules);
         $this->app->boot();
 
         return $this->app;
@@ -123,17 +144,56 @@ final class ApplicationBuilder
     /**
      * @throws \Throwable
      */
-    private function registerProviders(): void
+    private function loadModules(): ModuleList
     {
-        $providers = $this->providers;
-        $bootstrapFile = $this->app->getBootstrapProvidersPath();
-        if ($bootstrapFile !== null && file_exists($bootstrapFile)) {
-            $providers = array_merge($providers, require $bootstrapFile);
-        }
+        $modules = ModuleList::create(
+            array_merge($this->modules, $this->requireBootstrapFile($this->app->getBootstrapModulesPath())),
+            fn (string $class): object => $this->app->make($class),
+        );
 
-        foreach (array_merge(self::DEFAULT_PROVIDERS, $providers) as $provider) {
+        $modules->applyConfiguration($this->app->getConfig());
+        $this->app->instance(ModuleList::class, $modules);
+        $this->app->alias(ModuleList::class, 'modules');
+
+        return $modules;
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    private function registerProviders(ModuleList $modules): void
+    {
+        $providers = array_merge(
+            self::DEFAULT_PROVIDERS,
+            $this->providers,
+            $this->requireBootstrapFile($this->app->getBootstrapProvidersPath()),
+            $modules->getProviders(),
+        );
+
+        foreach ($providers as $provider) {
+            if (!is_object($provider) && (!is_string($provider) || !class_exists($provider))) {
+                throw new \UnexpectedValueException(sprintf('The service provider %s does not exist.', is_string($provider) ? $provider : get_debug_type($provider)));
+            }
+
             $this->app->register($provider);
         }
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    private function requireBootstrapFile(?string $path): array
+    {
+        if ($path === null || !file_exists($path)) {
+            return [];
+        }
+
+        $items = require $path;
+        if (!is_array($items)) {
+            throw new \UnexpectedValueException(sprintf('The bootstrap file %s must return an array.', $path));
+        }
+
+        return $items;
     }
 
     private function registerDefaultBindings(): void

@@ -44,7 +44,8 @@ Application::configure($basePath)
 ```
 mu-plugin                       Application::configure()->create()
  ├─ load the configuration       config/*.php merged with the default configuration
- ├─ register the providers       register() of each provider (package, then project)
+ ├─ load the modules             bootstrap/modules.php, their configuration is added to the lists
+ ├─ register the providers       register() of each provider (package, project, then modules)
  └─ boot the providers           boot() of each provider: the WordPress hooks are added
 
 init (priority 0)               the translations of the package are loaded, the locale of the dates is set
@@ -67,6 +68,7 @@ The controllers are executed on `init` with the priority 10: the callbacks of `i
 ```
 project/
 ├── bootstrap/
+│   ├── modules.php        ← modules enabled on the site (see Modules)
 │   └── providers.php      ← service providers of the project
 ├── config/                ← configuration of the project
 │   ├── router.php
@@ -204,7 +206,7 @@ final class AppServiceProvider
 - `boot()` is called once all the providers are registered, it is the place to add the WordPress hooks.
 - A provider registered later with `app()->register()` (e.g. by a plugin on `plugins_loaded`, or from the `boot()` of another provider) is booted immediately.
 
-The providers of the package are registered before the ones of the project: dates, router, WP-CLI commands, Twig, assets, images, security and translations.
+The providers of the package are registered before the ones of the project: dates, router, WP-CLI commands, Twig, assets, images, security and translations. The providers of the [modules](modules.md) are registered last.
 
 Providers can also be added with `withProviders()`:
 
